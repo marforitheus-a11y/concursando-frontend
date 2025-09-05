@@ -1,0 +1,395 @@
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel Admin - Simulado Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f9fafb;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    /* Unified button styles for admin panel */
+    .btn-create-category, .btn-small, .btn-secondary, .btn-delete, .btn-primary {
+      display: inline-flex;align-items:center;gap:8px;cursor:pointer;border:0;padding:8px 12px;border-radius:10px;font-weight:600;transition:all .16s ease;box-shadow:0 6px 18px rgba(2,6,23,0.06);
+    }
+    .btn-primary { background: linear-gradient(90deg,#2563eb,#3b82f6); color:#fff }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow:0 10px 26px rgba(59,130,246,0.18) }
+    .btn-secondary { background:#f3f4f6; color:#111 }
+    .btn-secondary:hover { background:#e5e7eb }
+    .btn-delete { background: #fee2e2; color:#9b1c1c }
+    .btn-delete:hover { background:#fecaca }
+    .btn-small { background:transparent;border:1px solid rgba(0,0,0,0.06);padding:6px 8px;border-radius:8px;font-weight:700 }
+
+  /* Categories / Users table scroll area */
+  .scroll-table { width:100%; background:#fff; border:1px solid #e6edf8; border-radius:12px; overflow:auto; max-height:420px; position:relative; box-shadow:0 6px 18px rgba(2,6,23,0.04) }
+    .scroll-table table { width:100%; border-collapse:collapse; font-size:14px }
+    .scroll-table thead th { position:sticky; top:0; background:linear-gradient(90deg,#f8fafc,#ffffff); padding:12px 16px; text-align:left; border-bottom:1px solid #eef2f7 }
+    .scroll-table tbody tr { border-bottom:1px solid #f1f5f9 }
+    .cat-name { font-weight:600; padding:12px 16px }
+    .cat-sub { padding-left:28px; color:#4b5563 }
+
+    /* Scrollbar for tables */
+    tbody::-webkit-scrollbar {
+      height: 8px;
+    }
+    tbody::-webkit-scrollbar-thumb {
+      background-color: #3b82f6;
+      border-radius: 4px;
+    }
+    /* Add border bottom to each row except last for themes and users */
+    #themes-table-body tr:not(:last-child),
+    #users-table-body tr:not(:last-child) {
+      border-bottom: 1.5px solid #e5e7eb; /* Tailwind gray-200 */
+    }
+  /* Visible search input styling (ensure it stands out) */
+  #user-search { box-shadow: 0 6px 18px rgba(2,6,23,0.04); }
+
+  /* Status pill styles */
+  .status-pill { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:600; font-size:13px; min-width:84px; text-align:center }
+  .status-pill.online { background: linear-gradient(90deg,#10b981,#34d399); color:#fff }
+  .status-pill.offline { background: linear-gradient(90deg,#f3f4f6,#fee2e2); color:#9b1c1c }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <header class="flex flex-col sm:flex-row justify-between items-center mb-12 gap-6">
+      <div class="logo-header">
+        <img src="a212705a-8951-474c-bf5e-c4fa68780392.svg" alt="Concursando" class="logo-img-header" />
+        <h1 class="text-4xl font-extrabold text-gray-900 select-none">Painel Admin</h1>
+      </div>
+      <div class="flex gap-4 w-full sm:w-auto">
+        <a href="broadcast.html" class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-md hover:bg-blue-700 transition focus:outline-none focus:ring-4 focus:ring-blue-300" role="button" tabindex="0">
+          Mensagem Global
+        </a>
+        <button id="test-api-btn" type="button" aria-label="Testar API" class="inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-800 rounded-xl font-medium shadow-sm hover:bg-gray-200 transition focus:outline-none focus:ring-4 focus:ring-gray-300">
+          Testar API
+        </button>
+        <button id="logout-btn" type="button" aria-label="Sair do painel admin" class="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-xl font-semibold shadow-md hover:bg-red-700 transition focus:outline-none focus:ring-4 focus:ring-red-300">
+          Sair <i class="fa-solid fa-right-from-bracket text-lg"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="space-y-16">
+      <!-- Gerenciar Categorias -->
+      <section aria-labelledby="manage-categories-title">
+        <h2 id="manage-categories-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Gerenciar Categorias</h2>
+        <div class="categories-wrapper mb-6">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="text-sm text-gray-700">Estrutura: Categoria > Subcategoria (até 2 níveis) > Tema</div>
+            <button id="create-root-category" class="btn-create-category" title="Criar nova categoria">+ Nova Categoria</button>
+          </div>
+          <div id="categories-list" class="category-list"></div>
+        </div>
+      </section>
+      <!-- Gerenciar Temas (agrupados por Categoria) -->
+      <section aria-labelledby="manage-themes-title">
+        <h2 id="manage-themes-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Gerenciar Temas</h2>
+        <div id="themes-by-category" class="categories-wrapper">
+          <div class="text-gray-600">Carregando temas...</div>
+        </div>
+      </section>
+
+      <!-- Adicionar Novo Tema -->
+      <section aria-labelledby="add-theme-title">
+        <h2 id="add-theme-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Adicionar Novo Tema (PDF)</h2>
+        <form id="theme-form" class="space-y-6 bg-white p-6 rounded-3xl shadow-md border border-gray-200" novalidate>
+          <div class="flex flex-col">
+            <label for="themeName" class="mb-2 font-medium text-gray-700">Nome do Tema</label>
+            <input type="text" id="themeName" name="themeName" required autocomplete="off" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+          </div>
+          <div class="flex flex-col">
+            <label for="questionCount" class="mb-2 font-medium text-gray-700">Quantidade de Questões a Gerar</label>
+            <input type="number" id="questionCount" name="questionCount" value="5" min="1" required class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+          </div>
+          <div class="flex flex-col">
+            <label for="difficultySelect" class="mb-2 font-medium text-gray-700">Dificuldade</label>
+            <select id="difficultySelect" name="difficultySelect" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="easy">Fácil</option>
+              <option value="medium">Média</option>
+              <option value="hard">Difícil</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label for="categorySelect" class="mb-2 font-medium text-gray-700">Categoria</label>
+            <select id="categorySelect" name="categorySelect" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Sem categoria</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label for="subcategorySelect" class="mb-2 font-medium text-gray-700">Subcategoria</label>
+            <select id="subcategorySelect" name="subcategorySelect" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Sem subcategoria</option>
+            </select>
+          </div>
+          <div class="flex flex-col">
+            <label for="sourceType" class="mb-2 font-medium text-gray-700">Fonte</label>
+            <select id="sourceType" name="sourceType" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="pdf">Arquivo PDF</option>
+              <option value="web">Busca na Web</option>
+            </select>
+          </div>
+          <div id="pdf-input" class="flex flex-col">
+            <label for="pdfFile" class="mb-2 font-medium text-gray-700">Arquivo PDF</label>
+            <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" class="rounded-xl border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+          </div>
+          <div id="web-input" class="flex flex-col" style="display:none;">
+            <label for="searchQuery" class="mb-2 font-medium text-gray-700">Pesquisar na Web (termo ou tópico)</label>
+            <input type="text" id="searchQuery" name="searchQuery" placeholder="Ex: Ensino público em escolas oficiais" autocomplete="off" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+            <p class="mt-2 text-sm text-gray-500">Ao usar a Busca na Web, o sistema buscará páginas públicas sobre o tema e a IA gerará as questões a partir dos textos coletados.</p>
+          </div>
+          <button type="submit" id="submit-theme-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-3 shadow-md transition focus:outline-none focus:ring-4 focus:ring-blue-300">
+            Enviar e Gerar Questões
+          </button>
+          <div id="upload-progress-container" class="mt-4 hidden">
+            <p id="theme-status" class="text-center font-medium text-gray-700 min-h-[1.5rem]"></p>
+            <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-1" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div id="progress-bar-fill" class="h-full bg-blue-600 rounded-full transition-all duration-300 ease-in-out" style="width: 0%;"></div>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Gerenciar Usuários -->
+      <section aria-labelledby="manage-users-title">
+        <h2 id="manage-users-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Gerenciar Usuários</h2>
+        <button id="reload-users-btn" class="mb-4 px-5 py-2 bg-gray-200 text-gray-800 rounded-xl font-semibold shadow-sm hover:bg-gray-300 transition focus:outline-none focus:ring-4 focus:ring-gray-300">
+          Atualizar Lista
+        </button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="flex:1;min-width:220px;">
+            <input id="user-search" type="search" placeholder="Buscar usuário por nome..." aria-label="Buscar usuários" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e6edf8;box-shadow:0 4px 12px rgba(2,6,23,0.04);" />
+          </div>
+          <div style="white-space:nowrap"> 
+            <!-- botão já existe acima (Atualizar Lista) -->
+          </div>
+        </div>
+        <div class="scroll-table">
+          <table class="min-w-full table-auto border-collapse text-left text-gray-800">
+            <thead class="bg-blue-600 text-white select-none">
+              <tr>
+                <th class="px-5 py-3 font-semibold">ID</th>
+                <th class="px-5 py-3 font-semibold">Usuário</th>
+                <th class="px-5 py-3 font-semibold">Detalhes</th>
+                <th class="px-5 py-3 font-semibold">Tipo</th>
+                <th class="px-5 py-3 font-semibold">Reportado Por</th>
+                <th class="px-5 py-3 font-semibold">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body" class="bg-white">
+                <tr>
+                  <td colspan="5" class="text-center py-6 text-gray-500">Carregando usuários...</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Adicionar Novo Usuário -->
+      <section aria-labelledby="add-user-title">
+        <h2 id="add-user-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Adicionar Novo Usuário</h2>
+        <form id="user-form" class="space-y-6 bg-white p-6 rounded-3xl shadow-md border border-gray-200" novalidate>
+          <div class="flex flex-col">
+            <label for="username" class="mb-2 font-medium text-gray-700">Nome do Usuário</label>
+            <input type="text" id="username" name="username" required autocomplete="off" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+          </div>
+          <div class="flex flex-col">
+            <label for="password" class="mb-2 font-medium text-gray-700">Senha</label>
+            <input type="password" id="password" name="password" required autocomplete="new-password" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+          </div>
+          <div class="flex flex-col">
+            <label for="subscription" class="mb-2 font-medium text-gray-700">Validade da Assinatura</label>
+            <input type="date" id="subscription" name="subscription" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl py-3 shadow-md transition focus:outline-none focus:ring-4 focus:ring-blue-300">
+            Criar Usuário
+          </button>
+          <p id="user-status" class="mt-2 text-center font-medium min-h-[1.5rem] text-red-600"></p>
+        </form>
+      </section>
+
+      <!-- Últimos Reportes de Erro -->
+      <section aria-labelledby="error-reports-title">
+        <h2 id="error-reports-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Últimos Reportes de Erro</h2>
+        <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+          <table class="min-w-full table-auto border-collapse text-left text-gray-800">
+            <thead class="bg-blue-600 text-white select-none">
+              <tr>
+                <th class="px-5 py-3 font-semibold">Status</th>
+                <th class="px-5 py-3 font-semibold">Questão</th>
+                <th class="px-5 py-3 font-semibold">Reportado Por</th>
+                <th class="px-5 py-3 font-semibold">Tipo</th>
+              </tr>
+            </thead>
+            <tbody id="reports-table-body" class="bg-white">
+              <tr>
+                <td colspan="4" class="text-center py-6 text-gray-500">Carregando reportes...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+        <!-- Modal para analisar JSON da questão reportada -->
+        <div id="report-json-modal" style="display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;background:rgba(0,0,0,0.4)">
+          <div style="background:#fff;padding:16px;border-radius:12px;max-width:900px;width:95%;max-height:80vh;overflow:auto">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <h3 style="margin:0">JSON da Questão</h3>
+              <button id="close-report-json" style="background:transparent;border:none;font-size:18px;cursor:pointer">✕</button>
+            </div>
+            <textarea id="report-json-text" style="width:100%;height:60vh;font-family:monospace;padding:8px;border:1px solid #e6edf8;border-radius:8px"></textarea>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
+              <button id="cancel-report-json" class="btn-secondary">Fechar</button>
+              <button id="save-report-json" class="btn-primary">Salvar alterações</button>
+            </div>
+          </div>
+        </div>
+    </main>
+  </div>
+
+  <!-- Modal Resetar Tema -->
+  <div
+    id="reset-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="reset-modal-title"
+  >
+    <div class="bg-white rounded-3xl p-8 max-w-lg w-full shadow-lg relative">
+      <h2 id="reset-modal-title" class="text-2xl font-bold text-gray-900 mb-4">Resetar Tema</h2>
+      <p class="mb-6 text-gray-700">
+        Para gerar novas questões, por favor, envie novamente o arquivo PDF original e defina a nova quantidade de questões.
+      </p>
+      <form id="reset-theme-form" class="space-y-6" novalidate>
+        <input type="hidden" id="reset-theme-id" />
+        <div class="flex flex-col">
+          <label for="resetQuestionCount" class="mb-2 font-medium text-gray-700">Nova Quantidade de Questões</label>
+          <input
+            type="number"
+            id="resetQuestionCount"
+            name="questionCount"
+            value="5"
+            min="1"
+            required
+            class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+        <div class="flex flex-col">
+          <label for="resetPdfFile" class="mb-2 font-medium text-gray-700">Arquivo PDF Original</label>
+          <input
+            type="file"
+            id="resetPdfFile"
+            name="pdfFile"
+            accept=".pdf"
+            required
+            class="rounded-xl border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+          />
+        </div>
+        <div class="flex justify-end gap-4 mt-6">
+          <button type="button" id="cancel-reset" class="px-5 py-2 rounded-xl bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold shadow-sm transition focus:outline-none focus:ring-4 focus:ring-gray-300">
+            Cancelar
+          </button>
+          <button type="submit" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md transition focus:outline-none focus:ring-4 focus:ring-blue-300">
+            Resetar Questões
+          </button>
+        </div>
+        <p id="reset-status" class="mt-2 text-center font-medium min-h-[1.5rem] text-red-600"></p>
+      </form>
+    </div>
+  </div>
+
+    <!-- Modal Adicionar Questões -->
+    <div
+      id="add-questions-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-questions-modal-title"
+    >
+      <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-lg relative">
+        <h2 id="add-questions-modal-title" class="text-2xl font-bold text-gray-900 mb-4">Adicionar Questões ao Tema</h2>
+        <form id="add-questions-form" class="space-y-4" novalidate>
+          <input type="hidden" id="add-theme-id" />
+          <div class="flex flex-col">
+            <label for="addSourceType" class="mb-2 font-medium text-gray-700">Fonte</label>
+            <select id="addSourceType" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="pdf">Arquivo PDF</option>
+              <option value="web">Busca na Web (tópico)</option>
+            </select>
+          </div>
+          <div id="add-pdf-input" class="flex flex-col">
+            <label for="addPdfFile" class="mb-2 font-medium text-gray-700">Arquivo PDF</label>
+            <input type="file" id="addPdfFile" name="pdfFile" accept=".pdf" class="rounded-xl border border-gray-300 px-4 py-2 text-gray-900" />
+          </div>
+          <div id="add-web-input" class="flex flex-col" style="display:none;">
+            <label for="addSearchQuery" class="mb-2 font-medium text-gray-700">Pesquisar na Web (termo ou tópico)</label>
+            <input type="text" id="addSearchQuery" placeholder="Ex: Matemática Discreta" autocomplete="off" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900" />
+          </div>
+          <div class="flex flex-col">
+            <label for="addQuestionCount" class="mb-2 font-medium text-gray-700">Quantidade de Questões a Gerar</label>
+            <input type="number" id="addQuestionCount" value="5" min="1" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900" />
+          </div>
+          <div class="flex flex-col">
+            <label for="addDifficulty" class="mb-2 font-medium text-gray-700">Dificuldade</label>
+            <select id="addDifficulty" class="rounded-xl border border-gray-300 px-4 py-3 text-gray-900">
+              <option value="easy">Fácil</option>
+              <option value="medium">Média</option>
+              <option value="hard">Difícil</option>
+            </select>
+          </div>
+          <div class="flex justify-end gap-3 mt-4">
+            <button type="button" id="cancel-add-questions" class="px-5 py-2 rounded-xl bg-gray-300 hover:bg-gray-400 text-gray-900 font-semibold">Cancelar</button>
+            <button type="submit" id="confirm-add-questions" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold">Adicionar Questões</button>
+          </div>
+          <div id="add-questions-progress" class="mt-3 hidden">
+            <p id="add-questions-status" class="text-center font-medium min-h-[1.5rem]"></p>
+            <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden mt-1">
+              <div id="add-progress-fill" class="h-full bg-blue-600 rounded-full" style="width:0%"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Debug panel for server error bodies (visible when enabled) -->
+    <div id="server-error-panel" style="position:fixed;right:12px;bottom:12px;max-width:420px;max-height:40vh;overflow:auto;z-index:60;display:none;border:1px solid rgba(220,38,38,0.9);background:#fff;padding:10px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.12);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <strong style="color:#dc2626">Server Error</strong>
+        <button id="close-server-error" aria-label="Fechar" style="background:transparent;border:none;color:#666;cursor:pointer;font-size:14px;padding:2px 6px">✕</button>
+      </div>
+      <pre id="server-error-body" style="white-space:pre-wrap;font-size:12px;color:#111;margin:0;"></pre>
+    </div>
+
+  <!-- Custom context menu (desktop right-click and mobile tap) -->
+  <div id="custom-context-menu" role="menu" aria-hidden="true" style="position:fixed;z-index:70;display:none;min-width:180px;background:#fff;border:1px solid rgba(0,0,0,0.08);box-shadow:0 8px 30px rgba(0,0,0,0.12);border-radius:8px;overflow:hidden;font-family:inherit;font-size:14px;"></div>
+  <script src="admin.js"></script>
+  <!-- Theme preview modal (Windows Explorer style) -->
+  <div id="theme-modal" role="dialog" aria-modal="true" aria-labelledby="theme-modal-title" style="display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;">
+    <div style="background:rgba(0,0,0,0.45);position:absolute;inset:0;"></div>
+    <div style="position:relative;max-width:760px;margin:auto;background:#fff;border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,0.28);padding:20px;border:1px solid rgba(0,0,0,0.06);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 id="theme-modal-title" style="margin:0;font-size:1.2rem;font-weight:700">Tema</h3>
+        <button id="close-theme-modal" aria-label="Fechar" style="background:transparent;border:none;font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div id="theme-modal-body" style="min-height:80px;color:var(--text)"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button id="modal-assign" class="btn-secondary">Atribuir Categoria</button>
+        <button id="modal-reset" class="btn-secondary">Resetar</button>
+        <button id="modal-delete" class="btn-delete">Apagar</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

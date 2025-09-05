@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mensagem Global - Admin</title>
+    <link rel="stylesheet" href="style.css">
+<body class="site-theme">
+    <div class="container">
+        <header class="app-header">
+            <a href="admin.html" class="btn-header">&larr; Voltar ao Painel</a>
+            <div class="logo-header">
+                <img src="assets/logo.svg" alt="Concursando" class="logo-img-header" />
+                <h1 class="brand-title">Mensagem Global</h1>
+            </div>
+            <button id="logout-btn" class="btn-logout">Sair</button>
+        </header>
+        <main class="quiz-body">
+            <section class="admin-section">
+                <h2>Enviar Mensagem para Todos os Usuários Ativos</h2>
+                <p>A mensagem aparecerá como um alerta para todos os usuários que estiverem no site. Ela ficará ativa por 1 minuto.</p>
+                <form id="broadcast-form">
+                    <div class="input-group">
+                        <label for="message">Mensagem:</label>
+                        <textarea id="message" name="message" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Enviar Mensagem</button>
+                    <p id="broadcast-status" class="status"></p>
+                </form>
+            </section>
+        </main>
+    </div>
+    <script src="broadcast.js"></script>
+</body>
+</head>
+</html>

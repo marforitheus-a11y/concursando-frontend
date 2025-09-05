@@ -1,0 +1,19 @@
+/* Small utilities for SVG/icon usage across the site */
+.u-icon{width:16px;height:16px;display:inline-block;vertical-align:middle}
+.u-icon--hidden{display:none}
+.icon{width:16px;height:16px;display:inline-block;vertical-align:middle}
+
+/* Ensure icons inside the option badge are hidden by default. Use !important
+	so previous stylesheet rules (from style.css) can't accidentally show both
+	icons at the same time. The correct variant is forced visible below. */
+.option-letter{position:relative}
+.option-letter .icon{display:none !important;width:16px;height:16px;margin-left:6px;opacity:0;transition:opacity .12s ease}
+.option-letter .letter{display:inline-block}
+
+/* Show only the check icon for correct options */
+.option.correct .option-letter .icon-check{display:inline-block !important;opacity:1 !important;color:#fff !important}
+/* Show only the cross icon for incorrect options */
+.option.incorrect .option-letter .icon-cross{display:inline-block !important;opacity:1 !important;color:#fff !important}
+
+/* Utility to force-show an icon if needed elsewhere */
+.u-icon--show{display:inline-block}

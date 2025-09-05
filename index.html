@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concursando - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+  <body class="site-theme">
+  <div class="login-container" role="main">
+    <div class="logo logo-header" role="img" aria-label="Concursando">
+  <img class="logo-img-header" src="assets/logo.svg" alt="Concursando" />
+      <p class="muted">Sua plataforma de questões por IA</p>
+    </div>
+
+    <!-- Simplified login form: only username + password (signup removed) -->
+    <form id="auth-form">
+      <input type="text" id="username" placeholder="Seu usuário ou e-mail" required>
+
+      <input type="password" id="password" placeholder="Senha" required>
+
+      <a href="#" class="forgot">Esqueceu a senha?</a>
+
+      <button type="submit" id="submit-btn" class="login-btn">Entrar</button>
+    </form>
+
+    <p id="error-message" class="error-message"></p>
+  </div>
+
+    <!-- deploy-bump: updated login handler to use real backend auth -->
+  </body>
+
+  <script>
+    // Real login handler: POST to backend /login and store JWT.
+    (function () {
+      const API_URL = 'https://quiz-api-z4ri.onrender.com';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const authForm = document.getElementById('auth-form');
+        const errorMessage = document.getElementById('error-message');
+        if (!authForm) return;
+
+        authForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          if (errorMessage) { errorMessage.textContent = ''; errorMessage.style.color = 'orange'; errorMessage.textContent = 'Entrando...'; }
+
+          const loginIdentifier = document.getElementById('username').value.trim();
+          const password = document.getElementById('password').value;
+
+          if (!loginIdentifier || !password) {
+            if (errorMessage) { errorMessage.textContent = 'Por favor preencha usuário e senha.'; errorMessage.style.color = 'red'; }
+            return;
+          }
+
+          try {
+            const resp = await fetch(`${API_URL}/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ loginIdentifier, password })
+            });
+            const data = await resp.json();
+            if (!resp.ok) throw new Error(data.message || `Erro ${resp.status}`);
+
+            // store token and username
+            localStorage.setItem('token', data.token);
+            try {
+              const payload = JSON.parse(atob(data.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+              localStorage.setItem('username', payload.username || loginIdentifier);
+              if (payload.role === 'admin') window.location.href = 'admin.html';
+              else window.location.href = 'quiz.html';
+            } catch (err) {
+              // fallback redirect
+              window.location.href = 'quiz.html';
+            }
+
+          } catch (err) {
+            if (errorMessage) { errorMessage.textContent = err.message || 'Usuário ou senha inválidos.'; errorMessage.style.color = 'red'; }
+          }
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

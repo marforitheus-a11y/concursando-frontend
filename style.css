@@ -1,0 +1,600 @@
+/* Default font (admin kept as-is). Site theme overrides below. */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Font for new site-theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root{
+  /* legacy defaults kept for admin pages */
+  --white:#FFFFFF;
+  --muted:#6B7280;
+  --shadow:rgba(0,0,0,0.06);
+  --text:#162029;
+}
+
+/* Scoped site theme: Royal Blue / Violet / Black palette applied only when body has .site-theme */
+.site-theme{
+  --brand-royal:#0b3d91; /* deep royal blue */
+  --brand-violet:#6c4bd7; /* violet accent */
+  --brand-black:#0b0b0b; /* primary text */
+  --bg-100: linear-gradient(135deg,#f6f9ff,#f0f4ff);
+  --logo-alpha: 0.10;
+  --accent: var(--brand-royal);
+  --respond-bg: linear-gradient(180deg,var(--brand-royal),var(--brand-violet));
+  --muted:#7b7f8b;
+  --text:var(--brand-black);
+
+  /* Previously-used baby color tokens are referenced by legacy components
+    (login button, inputs, small accents). Define them for the scoped theme
+    so components keep visible contrast under .site-theme. */
+  --baby-100: #e6f0ff;
+  --baby-200: #9fc5ff;
+  --baby-300: #0b3d91; /* primary button background for site-theme */
+}
+
+/* Common app colors used by JS (progress, status) */
+:root{
+  --success-color: #059669; /* emerald-500 */
+  --danger-color: #dc2626; /* red-600 */
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
+html,body{height:100%}
+body{
+  background:var(--bg-100, linear-gradient(135deg,#f5fbff,#fff));
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:36px 20px;
+  position:relative; /* allow overlay pseudo-elements */
+}
+
+/* Background image UX: subtle, darkened, low-opacity decorative layer
+   - Uses a fixed pseudo-element so content can remain interactive above it
+   - Adds a dark overlay to keep foreground contrast high (accessibility)
+   - Provides responsive opacity/position tweaks for mobile performance */
+body::before{
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0; /* sits above the body background but behind page content */
+  pointer-events: none;
+  /* try absolute root first, then relative and assets/ as fallbacks for different hosting setups */
+  background-image: linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.52)), url('/background.png'), url('./background.png'), url('assets/background.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-blend-mode: multiply; /* darken image while preserving contrast */
+  filter: saturate(0.92) contrast(0.95);
+  opacity: 0.28; /* slightly higher so image is perceptible; tweak as needed */
+  will-change: transform, opacity;
+}
+
+/* Ensure all main content stacks above the decorative background */
+body > *{position:relative;z-index:1}
+
+/* Mobile: avoid fixed backgrounds for smoother scrolling and reduce opacity */
+@media (max-width:700px){
+  body::before{
+    position: absolute;
+    background-position: top center;
+    opacity: 0.12;
+    background-attachment: scroll;
+  }
+}
+
+/* LOGIN CARD */
+.login-container{
+  background:var(--white);
+  width:100%;
+  max-width:420px;
+  border-radius:14px;
+  padding:34px 28px;
+  box-shadow:0 12px 40px var(--shadow);
+  border:1px solid var(--baby-100);
+  text-align:center;
+}
+.logo-img{width:64px;height:64px;margin:0 auto 8px;display:block}
+.logo h1{color:var(--baby-300);font-size:1.9rem;margin:6px 0 6px}
+.logo p{color:var(--muted);font-size:0.95rem;margin-bottom:12px}
+
+.login-header{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
+.toggle-btn{background:var(--baby-100);border:none;padding:8px 20px;border-radius:10px;cursor:pointer;color:var(--text);font-weight:500}
+.toggle-btn.active{background:var(--baby-300);color:var(--white);box-shadow:0 8px 24px rgba(129,212,250,0.14)}
+
+#auth-form{display:flex;flex-direction:column;gap:12px}
+input[type=text],input[type=email],input[type=password]{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--baby-200);background:#FAFBFC;color:var(--text)}
+input::placeholder{color:var(--baby-300)}
+input:focus{outline:none;box-shadow:0 6px 18px rgba(129,212,250,0.12);border-color:var(--baby-300)}
+.login-btn{background:var(--baby-300);color:var(--white);padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:600}
+.login-btn:hover{background:var(--baby-200)}
+.forgot{color:var(--baby-300);font-size:0.95rem;text-align:right;display:block;text-decoration:none}
+.forgot:hover{text-decoration:underline}
+.error-message{color:#e53935;min-height:20px;margin-top:6px;text-align:center}
+
+/* QUIZ / APP BASIC LAYOUT */
+.container{width:100%;max-width:980px;margin:0 auto;padding:6px}
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:26px 18px;border-radius:10px;background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.04);box-shadow:0 6px 20px rgba(0,0,0,0.03)}
+
+/* Performance page: larger white bar behind logo to visually fit large logo */
+body.performance-page .app-header{
+  padding:26px 18px; /* taller */
+  border-radius:12px;
+  background:rgba(255,255,255,0.85);
+}
+body.performance-page .logo-img-header{width:180px;max-height:180px}
+.brand-title{color:var(--text);font-weight:600}
+.logo-header{text-align:center}
+.logo-img-header{width:56px;height:56px}
+
+/* When using the scoped site theme we intentionally show the main logo
+  image (some rules previously hid it globally). This overrides that rule
+  only for pages that have body.site-theme. */
+.site-theme .logo-img-header{
+  display:block;
+  /* 3x larger than the previous default (120px -> 360px) */
+  width:360px;
+  height:auto;
+  max-width:90%;
+  max-height:420px;
+  margin:0 auto;
+}
+
+/* Center chart-card contents and constrain width so chart stays centered */
+#chart-card{display:flex;flex-direction:column;align-items:center;justify-content:center;max-width:760px;margin:0 auto}
+#chart-card canvas{max-width:100% !important;height:320px !important}
+
+/* Ensure hamburger menu button sits above header visuals */
+.menu-toggle-btn{z-index:60;position:relative}
+
+/* Responsive logo sizes (3x the prior responsive sizes) */
+@media (max-width:700px){
+  .site-theme .logo-img-header{width:264px;max-height:300px}
+}
+@media (min-width:1000px){
+  .site-theme .logo-img-header{width:420px;max-height:480px}
+}
+
+/* Layered logo behind title following Laws of UX: visual hierarchy, contrast, and aesthetic-usability */
+.logo-header{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.logo-svg{position:absolute;left:50%;top:2px;transform:translateX(-50%) translateY(-16%);width:120px;height:120px;color:var(--accent);opacity:var(--logo-alpha);pointer-events:none;z-index:0}
+.brand-title{position:relative;z-index:1;font-size:1.4rem;color:var(--text);letter-spacing:0.4px;font-family:Inter, Poppins, sans-serif}
+
+/* Replace small image usage with accessible hidden fallback */
+.logo-img-header{width:56px;height:56px;display:none}
+.page-hero{padding:18px 0 8px}
+.hero-title h2{font-size:1.4rem;margin:0 0 6px}
+.hero-title p{margin:0 0 12px;color:var(--muted)}
+.quiz-body{max-width:760px;margin:0 auto;padding:8px 12px}
+.quiz-body ul{margin:8px 0 14px 20px;color:var(--text)}
+.quiz-body a{color:var(--baby-300)}
+.loading-card{background:var(--white);border-radius:12px;padding:24px;text-align:center;box-shadow:0 12px 40px var(--shadow)}
+.spinner{width:36px;height:36px;margin:8px auto 12px;border-radius:50%;border:4px solid var(--baby-100);border-top-color:var(--baby-300);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SIDEBAR / MENU */
+.menu-toggle-btn{background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--text)}
+.menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.18);opacity:0;visibility:hidden;transition:.2s;z-index:40}
+.menu-overlay.active{opacity:1;visibility:visible}
+.sidebar-menu{position:fixed;top:0;left:-260px;width:240px;height:100vh;background:var(--white);box-shadow:4px 0 24px rgba(0,0,0,0.08);padding:20px;z-index:50;transition:left .28s ease}
+.sidebar-menu.active{left:0}
+.sidebar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sidebar-links{list-style:none;padding:0;margin:8px 0}
+.sidebar-links li{margin:8px 0}
+.sidebar-links a{color:var(--accent);text-decoration:none;font-weight:500}
+.btn-logout-menu{margin-top:14px;background:transparent;border:1px solid rgba(0,0,0,0.06);padding:8px 10px;border-radius:8px;cursor:pointer}
+
+/* UTILITIES */
+.fade-field{opacity:0;max-height:0;overflow:hidden;transform:translateY(-8px);transition:all .32s ease}
+.fade-field.show{opacity:1;max-height:160px;transform:none}
+.hidden{display:none}
+
+@media(min-width:1000px){body{align-items:flex-start;padding-top:40px}.container{margin:0 auto}}
+@media(max-width:700px){.container{margin-left:0;padding:0}.login-container{max-width:92%}}
+
+/* On performance page, show the sidebar as a persistent left column on desktop */
+@media (min-width:1000px) {
+  body.performance-page .sidebar-menu{ left:0; box-shadow:4px 0 24px rgba(0,0,0,0.06); }
+  body.performance-page .menu-overlay{ display:none }
+  body.performance-page .container{ margin-left:260px; transition:margin .2s }
+}
+
+/* Responsive logo adjustments */
+@media (max-width:700px){
+  .logo-svg{width:84px;height:84px;transform:translateX(-50%) translateY(-8%);opacity:0.14}
+  .brand-title{font-size:1.05rem}
+}
+
+@media (min-width:1000px){
+  .logo-svg{width:160px;height:160px;transform:translateX(-50%) translateY(-22%);opacity:0.12}
+  .brand-title{font-size:1.6rem}
+}
+
+/* Site-wide helpers added for uniform visuals and responsive tables */
+.no-break{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.break-word{word-break:break-word}
+
+/* Scrollable table body with fixed height (used for users list) */
+.table-scroll{max-height:360px;overflow-y:auto}
+.table-scroll table{width:100%;border-collapse:collapse}
+.table-scroll td,.table-scroll th{padding:12px;border-bottom:1px solid rgba(0,0,0,0.04)}
+
+/* Categories block */
+.categories-wrapper{display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--white);border-radius:12px;border:1px solid rgba(0,0,0,0.04);box-shadow:0 8px 24px rgba(0,0,0,0.03)}
+.category-list{display:flex;flex-direction:column;gap:8px}
+.category-item{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);background:linear-gradient(90deg,rgba(129,212,250,0.04),transparent)}
+.category-breadcrumb{font-size:0.95rem;color:var(--text);display:flex;gap:6px;align-items:center}
+.category-actions{display:flex;gap:8px}
+.btn-create-category{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;background:var(--baby-300);color:var(--white);border:none;cursor:pointer}
+.btn-small{padding:6px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fff;cursor:pointer}
+
+/* Common button variants used in admin.js */
+.btn-secondary{background:#f3f4f6;border:1px solid rgba(0,0,0,0.04);padding:8px 10px;border-radius:10px;cursor:pointer}
+.btn-delete{background:#fff;border:1px solid rgba(0,0,0,0.06);color:#b91c1c;padding:8px 10px;border-radius:10px;cursor:pointer}
+
+/* User status indicators */
+.status-icon{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.status-icon.active{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,0.12)}
+.status-icon.inactive{background:#9ca3af}
+
+/* Account card */
+.account-card{background:var(--white);padding:18px;border-radius:12px;box-shadow:0 12px 40px var(--shadow);border:1px solid rgba(0,0,0,0.04)}
+.account-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.account-label{font-weight:600;color:var(--muted);min-width:140px}
+.tags-input{display:flex;gap:8px;flex-wrap:wrap}
+.tag-pill{background:var(--baby-200);padding:6px 10px;border-radius:999px;font-size:0.9rem}
+
+@media(max-width:640px){
+  .account-row{flex-direction:column;align-items:flex-start}
+  .account-label{min-width:0}
+}
+
+/* Theme list (vertical, scrollable) */
+.theme-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;padding:8px;max-width:680px;margin:8px auto}
+.theme-item{display:flex;gap:12px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);background:linear-gradient(90deg,rgba(255,255,255,0.6),transparent);cursor:pointer}
+.theme-item input[type="checkbox"]{margin-top:6px;flex:0 0 auto}
+.theme-info{display:flex;flex-direction:column;min-width:0}
+.theme-name{font-weight:600;color:var(--text);white-space:normal;overflow-wrap:break-word}
+.theme-meta{font-size:0.9rem;color:var(--muted);margin-top:4px;white-space:normal}
+
+/* Table row dividers and responsive wrapping */
+.scroll-table table{width:100%;border-collapse:separate;border-spacing:0 10px}
+.scroll-table tbody tr{background:var(--white);border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,0.04);overflow:hidden;border:1px solid rgba(0,0,0,0.04)}
+.scroll-table td, .scroll-table th{padding:12px;border:none;vertical-align:middle}
+.theme-name{font-weight:600;color:var(--text);max-width:560px}
+.theme-desc{color:var(--muted);font-size:0.95rem;max-width:420px}
+
+/* New flex-based themes table (replaces previous <table> layout) */
+.themes-table{width:100%}
+.themes-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:8px}
+.themes-head .head-left{font-weight:700}
+.themes-head .head-count{font-weight:700;text-align:center}
+.themes-body{display:flex;flex-direction:column;gap:10px}
+.theme-row{display:flex;align-items:center;justify-content:space-between;background:var(--white);border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,0.04);overflow:hidden;border:1px solid rgba(0,0,0,0.04);padding:12px}
+.theme-left{display:flex;gap:12px;align-items:flex-start;flex:1;min-width:0}
+.theme-left input[type="checkbox"]{margin-top:6px;flex:0 0 auto}
+.theme-left div{min-width:0}
+.theme-count{flex:0 0 84px;text-align:center;font-weight:700;color:var(--accent)}
+
+/* For progressive enhancement: keep older table styles hidden */
+ #themes-table-head{display:none}
+
+/* When site-theme is active, hide small corner X buttons for a cleaner mobile view */
+.site-theme .modal-close, .site-theme .close-sidebar { display:none !important }
+
+/* Make the questions count column visually distinct (second column now) */
+.scroll-table{width:100%}
+.scroll-table table{width:100%;table-layout:fixed}
+.scroll-table td:nth-child(2), .scroll-table th:nth-child(2){font-weight:700;color:var(--accent);}
+
+
+@media(max-width:700px){
+  .scroll-table table tfoot{display:none}
+  /* Mobile: layout each row as a horizontal flex container so the
+     theme block stays at left and the count is fixed at the right. This
+     keeps the count visually aligned even when the title wraps to multiple lines. */
+  .scroll-table tbody tr{
+    display:flex;
+    flex-direction:row;
+    align-items:flex-start; /* align to top so count stays near title start */
+    gap:12px;
+    padding:12px;
+  }
+  .scroll-table td{display:block;padding:6px}
+  .scroll-table td:first-child{flex:1;min-width:0}
+  .scroll-table td:nth-child(2){flex:0 0 84px;max-width:84px;text-align:center;white-space:nowrap}
+  .theme-name{font-size:0.98rem;overflow-wrap:break-word;white-space:normal;word-break:break-word}
+  .theme-desc{font-size:0.9rem;color:var(--muted);white-space:normal}
+
+  /* Ensure inner label/div containers can shrink properly and text flows
+    horizontally (fixes vertical single-letter wrapping seen on some phones) */
+  .scroll-table td:first-child > label{display:flex;align-items:flex-start;gap:12px}
+  .scroll-table td:first-child > label > div{min-width:0}
+  .scroll-table td:first-child, .scroll-table td:first-child *{writing-mode:horizontal-tb !important; text-orientation:mixed !important}
+}
+
+body.site-theme .scroll-table td:first-child .theme-name,
+body.site-theme .scroll-table td:first-child .theme-desc,
+body.site-theme .scroll-table td:first-child > label > div,
+body.site-theme .scroll-table td:first-child * {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: normal !important;
+  letter-spacing: normal !important;
+  word-break: break-word !important; /* permite quebrar palavras grandes */
+  overflow-wrap: break-word !important; /* compatível com navegadores móveis */
+}
+
+
+/* Ensure the theme title is not constrained to a tiny inline width */
+body.site-theme .scroll-table td:first-child .theme-name{display:block;max-width:100% !important}
+
+/* Folder UI used in admin and quiz */
+.category-folder, .category-folder-quiz{background:var(--white);border-radius:12px;padding:10px;border:1px solid rgba(0,0,0,0.04);box-shadow:0 10px 28px rgba(0,0,0,0.04)}
+.folder-header{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px dashed rgba(0,0,0,0.04);margin-bottom:8px}
+.folder-title{font-weight:700;color:var(--text)}
+.folder-count{color:var(--muted);font-weight:600;margin-left:8px}
+.folder-list{display:none;padding:8px;gap:8px}
+.folder-list .folder-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.04);background:linear-gradient(90deg,rgba(129,212,250,0.03),transparent);margin-bottom:6px}
+.folder-item-main{display:flex;flex-direction:column}
+.folder-item-name{font-weight:600}
+.folder-item-meta{font-size:0.9rem;color:var(--muted)}
+.folder-item-actions{display:flex;gap:8px}
+
+/* Windows-like folder and file visuals */
+.win-folder{display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:12px;border-radius:6px;background:linear-gradient(180deg,#fff,#f7fbff);border:1px solid rgba(0,0,0,0.04);width:140px;margin:8px;cursor:pointer}
+.win-folder .folder-icon{width:72px;height:54px;border-radius:6px;background:linear-gradient(180deg,#ffeaa7,#ffd166);display:flex;align-items:center;justify-content:center;box-shadow:inset 0 -6px 12px rgba(0,0,0,0.03)}
+.win-folder .folder-label{font-weight:600;color:var(--text);font-size:0.95rem;text-align:center}
+.win-file{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.04);background:#fff;margin:6px 0;cursor:pointer}
+.win-file .file-icon{width:28px;height:36px;border-radius:4px;background:linear-gradient(180deg,#e6f7ff,#d0ebff);display:inline-flex;align-items:center;justify-content:center}
+.win-file .file-name{font-size:0.95rem;color:var(--text)}
+
+/* Layout for folders grid inside category card */
+.folder-grid{display:flex;flex-wrap:wrap;gap:12px;padding:8px}
+
+/* Context menu items */
+#custom-context-menu .ctx-item{padding:10px 12px;cursor:pointer;border-bottom:1px solid rgba(0,0,0,0.04);}
+#custom-context-menu .ctx-item:last-child{border-bottom:none}
+#custom-context-menu .ctx-item:hover{background:rgba(11,110,246,0.06)}
+
+@media(max-width:700px){
+  .win-folder{width:44%;margin:6px}
+}
+
+/* Mobile tweaks for quiz setup controls: stack selects/controls and hide the 'Assunto' field
+   so the Start button doesn't overflow the viewport. Keeps button visible inside background. */
+@media (max-width:700px) {
+  /* make the discipline/subject selects stack vertically */
+  .select-pair { display:flex; flex-direction:column; gap:10px; }
+  /* hide secondary select (subject) to avoid overflow on small screens */
+  .select-box.secondary { display:none !important; }
+
+  /* stack difficulties, count input and button vertically */
+  .controls-row { display:flex; flex-direction:column; gap:10px; align-items:flex-start; padding:12px 8px; }
+  .controls-row > div { width:100%; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  /* make the question count input full-width and more touch-friendly */
+  #question-count { width:100%; max-width:100%; }
+  /* put the start button under the controls and make it full width */
+  .controls-row .btn-main { width:100%; align-self:stretch; padding:12px; font-size:1rem; }
+}
+
+/* Animations for folder open/close */
+.folder-list[aria-hidden="true"]{display:none}
+.folder-list.animate-open{display:flex;animation:folderOpen .22s ease forwards}
+.folder-list.animate-close{animation:folderClose .18s ease forwards}
+@keyframes folderOpen{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes folderClose{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-6px)}}
+
+/* Modal tweaks */
+#theme-modal{display:none}
+#theme-modal[data-open="true"]{display:flex}
+
+/* Quiz folder styles */
+.category-folder-quiz .folder-list-quiz{padding:6px 4px}
+.category-filter{margin-right:12px;font-weight:600;color:var(--text)}
+.category-filter .muted{color:var(--muted);font-weight:500}
+
+/* scrollbar refinement for theme list */
+.theme-list::-webkit-scrollbar{width:10px}
+.theme-list::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--brand-violet, #6c4bd7),var(--accent));border-radius:6px}
+
+/* Modern button styles (Laws of UX: affordance, feedback, consistency) */
+.btn-main{background:var(--respond-bg);color:white;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(11,110,246,0.12);transition:transform .12s ease,box-shadow .12s ease}
+.btn-main:active{transform:translateY(1px)}
+.btn-main:hover{box-shadow:0 14px 36px rgba(11,110,246,0.14);transform:translateY(-2px)}
+
+/* Qconcursos-like question card */
+.quiz-card{background:#fff;border-radius:10px;padding:24px;border:1px solid #e6e9ee;box-shadow:0 8px 20px rgba(6,21,38,0.06);transition:transform .12s ease,box-shadow .12s ease}
+.question-text{font-size:1.05rem;margin-bottom:16px;color:var(--text)}
+.options{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.option{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:10px;border:1px solid #f0f2f5;cursor:pointer;background:#fff;transition:box-shadow .12s ease,transform .08s ease}
+.option:hover{box-shadow:0 8px 18px rgba(6,21,38,0.06);transform:translateY(-2px)}
+.option-letter{min-width:44px;height:34px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:2px solid rgba(11,110,246,0.14);color:var(--accent);font-weight:700;padding:0 10px;font-size:0.95rem;background:linear-gradient(180deg,rgba(77,163,255,0.02),rgba(11,110,246,0.01))}
+/* icon inside the badge */
+.option-letter .letter{display:inline-block}
+.option.correct{background:#ecfdf5;border-color:rgba(5,150,105,0.12)}
+.option.incorrect{background:#fff5f5;border-color:rgba(220,38,38,0.08)}
+.progress-text{color:var(--muted);margin-top:14px}
+
+.btn-respond{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background-image:linear-gradient(180deg,rgba(11,110,246,0.08),rgba(77,163,255,0.02));
+  color:var(--brand-blue);
+  border:2px solid rgba(11,110,246,0.08);
+  padding:10px 20px;
+  min-height:44px;
+  border-radius:999px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(11,110,246,0.06);
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.btn-respond:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(11,110,246,0.12)}
+
+/* Container for quiz action buttons */
+.quiz-actions{display:flex;gap:12px;margin-top:18px}
+
+/* Report button style */
+.btn-report{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  border:2px solid rgba(220,38,38,0.08);
+  color:#b91c1c;
+  padding:10px 20px;
+  min-height:44px;
+  border-radius:999px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(220,38,38,0.04);
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.btn-report:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(220,38,38,0.08)}
+
+/* Selected state: immediate visual feedback when user clicks an option */
+.option.selected{background:linear-gradient(90deg, rgba(11,110,246,0.10), rgba(77,163,255,0.04));border-color:rgba(11,110,246,0.26);box-shadow:0 14px 34px rgba(11,110,246,0.06);transform:translateY(-2px)}
+.option.selected .option-letter{background:var(--brand-blue);color:#fff;border-color:transparent;box-shadow:0 6px 18px rgba(11,110,246,0.12)}
+.option:focus-visible{outline:3px solid rgba(11,110,246,0.12);outline-offset:4px}
+
+@media(min-width:1000px){
+  .option.selected{background:linear-gradient(90deg, rgba(11,110,246,0.12), rgba(77,163,255,0.05));border-color:rgba(11,110,246,0.28);box-shadow:0 18px 44px rgba(11,110,246,0.06)}
+}
+
+/* Specific rules for the quiz page: keep overall site theme large logo but
+   scale it down on the quiz page to fit the header area. */
+.site-theme.quiz-page .logo-img-header{
+  width:160px; /* smaller for quiz header */
+  max-height:180px;
+}
+@media (max-width:700px){
+  .site-theme.quiz-page .logo-img-header{width:120px;max-height:140px}
+}
+@media (min-width:1000px){
+  .site-theme.quiz-page .logo-img-header{width:200px;max-height:220px}
+}
+
+/* Ensure correct/incorrect states override the 'selected' state visuals */
+.option.selected.correct,
+.option.correct.selected,
+.option.correct {
+  background: #ecfdf5 !important; /* soft green background */
+  border-color: rgba(5,150,105,0.16) !important;
+  box-shadow: 0 12px 30px rgba(16,185,129,0.06) !important;
+  transform: none !important;
+}
+.option.selected.correct .option-letter,
+.option.correct .option-letter {
+  background: #059669 !important; /* stronger green */
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+.option.selected.incorrect,
+.option.incorrect.selected,
+.option.incorrect {
+  background: #fff5f5 !important; /* soft red */
+  border-color: rgba(220,38,38,0.12) !important;
+  box-shadow: 0 12px 30px rgba(220,38,38,0.04) !important;
+  transform: none !important;
+}
+.option.selected.incorrect .option-letter,
+.option.incorrect .option-letter {
+  background: #dc2626 !important; /* stronger red */
+  color: #fff !important;
+  border-color: transparent !important;
+}
+
+/* stronger contrast shades */
+.option.correct{background:#dcfce7 !important;border-color:rgba(16,185,129,0.22) !important}
+.option.correct .option-letter{background:#059669 !important}
+.option.incorrect{background:#ffeaea !important;border-color:rgba(220,38,38,0.18) !important}
+.option.incorrect .option-letter{background:#dc2626 !important}
+
+/* icon SVG visibility: hidden by default, show only the appropriate icon */
+.option-letter{position:relative}
+.option-letter .icon{display:none;width:16px;height:16px;margin-left:8px}
+.option.correct .option-letter .icon-check{display:inline-block;color:#fff}
+.option.incorrect .option-letter .icon-cross{display:inline-block;color:#fff}
+
+/* tweak shadows a bit for higher contrast */
+.option.correct{box-shadow:0 16px 44px rgba(16,185,129,0.10) !important}
+.option.incorrect{box-shadow:0 16px 44px rgba(220,38,38,0.08) !important}
+
+/* Mobile: center login container and hero spacing */
+@media (max-width:700px){
+  .logo-svg{width:72px;height:72px;transform:translateX(-50%) translateY(-6%);opacity:0.14}
+  .brand-title{font-size:1.05rem}
+  .quiz-card{padding:16px}
+  .option{padding:10px}
+  .option-letter{width:34px;height:34px}
+}
+
+@media (min-width:1000px){
+  .logo-svg{width:140px;height:140px;transform:translateX(-50%) translateY(-22%);opacity:0.12}
+  .brand-title{font-size:1.6rem}
+  .quiz-card{max-width:760px;margin:12px auto}
+}
+
+/* Center header brand visually (menu left, brand centered) */
+.app-header{position:relative}
+.app-header .logo-header{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);}
+.app-header .header-space{width:56px;height:1px} /* keeps right-side spacing similar to left menu button */
+
+/* Center the setup screen block and make it more compact */
+#setup-screen{max-width:760px;margin:18px auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+
+/* Controls styling: center controls on desktop, stacked on mobile */
+.controls-row{display:flex;gap:12px;align-items:center;margin-top:12px}
+.controls-row input[type=number]{width:88px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:linear-gradient(180deg,rgba(255,255,255,0.96),rgba(250,250,250,0.98))}
+.controls-row .btn-main{padding:10px 16px}
+@media(max-width:700px){
+  .controls-row{flex-direction:row;justify-content:flex-start}
+}
+
+/* Discipline / Subject select style (matching provided screenshot) */
+.select-pair{display:flex;gap:12px;align-items:center;margin:12px 0}
+.select-box{background:#fff;border:1px solid rgba(0,0,0,0.06);padding:10px 14px;border-radius:8px;min-width:200px;box-shadow:0 8px 20px rgba(0,0,0,0.04)}
+.select-box select{border:none;background:transparent;font-size:0.95rem;color:var(--text);outline:none;appearance:none;padding-right:18px}
+.select-label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:6px;font-weight:600}
+.select-pair .select-box.secondary{min-width:260px}
+.select-placeholder{color:var(--muted)}
+/* Fix para evitar letras em coluna no mobile */
+.scroll-table td:first-child label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.scroll-table td:first-child label div {
+  flex: 1 1 auto;       /* deixa o texto ocupar o espaço disponível */
+  min-width: 0 !important; /* garante que o flex não quebre em colunas */
+}
+
+.scroll-table .theme-name,
+.scroll-table .theme-desc {
+  display: block;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.4;
+}
+/* Forçar textos dos temas a ficarem sempre em linha no mobile */
+body.site-theme .scroll-table td:first-child label,
+body.site-theme .scroll-table td:first-child label div,
+body.site-theme .scroll-table td:first-child .theme-name,
+body.site-theme .scroll-table td:first-child .theme-desc {
+  display: block !important;
+  width: 100% !important;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  line-height: 1.4 !important;
+}

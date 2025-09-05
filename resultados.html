@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <!-- Meta tag para otimização mobile e para travar o zoom -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Resultado do Simulado - Concursando</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="site-theme">
+    <div class="container">
+        <header class="app-header">
+            <div class="logo-header">
+                <!-- Use the shared SVG (external file) so this page stays lightweight -->
+                <img src="assets/logo.svg" alt="Concursando" class="logo-img-header" />
+            </div>
+            <div class="header-buttons">
+                <a href="quiz.html" class="btn-header">
+                    <i class="fa-solid fa-pencil"></i> Novo Simulado
+                </a>
+                <a href="desempenho.html" class="btn-header">
+                    <i class="fa-solid fa-chart-line"></i> Meu Desempenho
+                </a>
+            </div>
+        </header>
+        <main class="quiz-body" id="result-details">
+            <p>Carregando resultados...</p>
+        </main>
+    </div>
+    <script src="resultados.js"></script>
+        <!-- Report modal -->
+        <div id="report-modal" class="global-modal" style="display:none;">
+            <div class="global-modal-card" style="max-width:720px;padding:18px;">
+                <h3 style="margin:0 0 8px 0;font-weight:700">Reportar erro na questão</h3>
+                <p id="report-question-text" style="font-size:14px;color:#333;margin-bottom:8px"></p>
+                <input type="hidden" id="report-question-id" />
+                <div style="margin-bottom:8px">
+                    <label for="report-details" style="display:block;font-weight:600;margin-bottom:4px">Explique o erro</label>
+                    <textarea id="report-details" rows="4" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e6edf8"></textarea>
+                </div>
+                <div id="report-suggestion" style="display:none;margin-top:12px;padding:12px;border-radius:8px;background:#f8fafc;border:1px solid rgba(0,0,0,0.04)"></div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
+                    <button id="cancel-report" class="btn-secondary">Cancelar</button>
+                    <button id="submit-report" class="btn-primary">Enviar reporte e pedir correção</button>
+                </div>
+            </div>
+        </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concursando - Meu Desempenho</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="icons.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="site-theme performance-page">
+  <!-- overlay for mobile menu -->
+  <div id="menu-overlay" class="menu-overlay"></div>
+
+  <nav id="sidebar-menu" class="sidebar-menu">
+    <div class="sidebar-header">
+      <h2>Menu</h2>
+    </div>
+    <ul class="sidebar-links">
+  <li><a href="quiz.html"><i class="fa-solid fa-house"></i> Início</a></li>
+      <li><a href="conta.html"><i class="fa-solid fa-user"></i> Minha Conta</a></li>
+      <li><a href="desempenho.html"><i class="fa-solid fa-chart-line"></i> Meu Desempenho</a></li>
+    </ul>
+    <button id="logout-btn-menu" class="btn-logout-menu">Sair <i class="fa-solid fa-right-from-bracket"></i></button>
+  </nav>
+
+  <div class="container">
+    <header class="app-header" role="banner">
+      <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Abrir menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="logo-header">
+        <img class="logo-img-header" src="assets/logo.svg" alt="Concursando" />
+      </div>
+      <div class="header-space"></div>
+    </header>
+
+    <section class="page-hero">
+      <div class="hero-title">
+        <h2>Meu Desempenho</h2>
+        <p>Veja a distribuição de acertos por tema e acompanhe sua evolução.</p>
+      </div>
+    </section>
+
+    <main class="quiz-body" id="main-content">
+      <div id="perf-wrapper">
+        <div id="perf-top" style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">
+          <div id="chart-card" class="quiz-card" style="flex:1;min-width:320px;max-width:640px">
+            <canvas id="themesChart"></canvas>
+          </div>
+
+          <div id="summary-card" class="quiz-card" style="width:320px;min-width:260px">
+            <h3 style="margin-top:0">Resumo</h3>
+            <p id="summary-text">Carregando histórico...</p>
+            <div style="margin-top:12px">
+              <label for="theme-select" style="font-weight:600">Selecione tema</label>
+              <select id="theme-select" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #e6edf8"></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="groups" style="margin-top:18px"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="desempenho.js"></script>
+
+  <script>
+    // menu open/close for desempenho page (simple, mirrors quiz.html behavior)
+    (function(){
+      const sidebarMenu = document.getElementById('sidebar-menu');
+      const menuOverlay = document.getElementById('menu-overlay');
+      const toggle = document.getElementById('menu-toggle-btn');
+      const logoutBtn = document.getElementById('logout-btn-menu');
+      if (toggle) toggle.addEventListener('click', ()=>{ sidebarMenu.classList.toggle('active'); menuOverlay.classList.toggle('active'); });
+      if (menuOverlay) menuOverlay.addEventListener('click', ()=>{ sidebarMenu.classList.remove('active'); menuOverlay.classList.remove('active'); });
+      if (logoutBtn) logoutBtn.addEventListener('click', ()=>{ localStorage.removeItem('token'); localStorage.removeItem('username'); window.location.href = 'index.html'; });
+    })();
+  </script>
+</body>
+</html>

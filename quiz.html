@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Concursando - Quiz</title>
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="icons.css" />
+</head>
+<body class="site-theme quiz-page">
+  <!-- Overlay para o menu lateral -->
+  <div id="menu-overlay" class="menu-overlay"></div>
+
+  <!-- Menu lateral -->
+  <nav id="sidebar-menu" class="sidebar-menu">
+    <div class="sidebar-header">
+      <h2>Menu</h2>
+    </div>
+    <ul class="sidebar-links">
+      <li><a href="conta.html"><i class="fa-solid fa-user"></i> Minha Conta</a></li>
+      <li><a href="desempenho.html"><i class="fa-solid fa-chart-line"></i> Meu Desempenho</a></li>
+    </ul>
+    <button id="logout-btn-menu" class="btn-logout-menu">
+      Sair <i class="fa-solid fa-right-from-bracket"></i>
+    </button>
+  </nav>
+
+  <!-- Container principal -->
+  <div class="container">
+  <header class="app-header" role="banner">
+      <button id="menu-toggle-btn" class="menu-toggle-btn" aria-label="Abrir menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <!-- Logo centralizada -->
+      <div class="logo-header" style="text-align:center;">
+  <img class="logo-img-header" src="assets/logo.svg" alt="Concursando" />
+      </div>
+
+      <div class="header-space"></div>
+    </header>
+
+    <!-- Hero / título da página -->
+    <section class="page-hero">
+      <div class="hero-title">
+        <h2>Crie seu Simulado</h2>
+        <p>Escolha os temas, defina a quantidade de questões e comece.</p>
+      </div>
+    </section>
+
+    <!-- Onde o JS injeta o conteúdo -->
+    <main id="main-content" class="quiz-body">
+      <div class="loading-card">
+        <div class="spinner"></div>
+        <p>Carregando simulado...</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal de mensagem global -->
+  <div id="global-message-modal" class="global-modal">
+    <div class="global-modal-card">
+  <!-- modal close removed: modal will close when tapping outside or via CTA -->
+      <img id="global-message-image" alt="" class="global-modal-image" />
+      <p id="global-message-content" class="global-modal-text"></p>
+    </div>
+  </div>
+
+  <!-- Modal Reportar Erro -->
+  <div id="report-modal" class="global-modal" style="display:none;">
+    <div class="global-modal-card" style="max-width:640px;padding:18px;">
+      <h3 style="margin:0 0 8px 0;font-weight:700">Reportar erro na questão</h3>
+      <p id="report-question-text" style="font-size:14px;color:#333;margin-bottom:8px"></p>
+      <form id="report-form">
+        <input type="hidden" id="report-question-id" />
+        <div style="margin-bottom:8px">
+          <label for="report-type" style="display:block;font-weight:600;margin-bottom:4px">Tipo de erro</label>
+          <select id="report-type" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e6edf8">
+            <option value="errata">Errata no enunciado</option>
+            <option value="options">Opções incorretas</option>
+            <option value="answer">Resposta incorreta</option>
+            <option value="other">Outro</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px">
+          <label for="report-details" style="display:block;font-weight:600;margin-bottom:4px">Descreva o problema</label>
+          <textarea id="report-details" rows="4" style="width:100%;padding:8px;border-radius:8px;border:1px solid #e6edf8"></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px">
+          <button type="button" id="cancel-report" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Enviar reporte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Script do Quiz -->
+  <script src="quiz.js"></script>
+
+  <!-- Background loader: try multiple paths and apply the first that loads -->
+  <script>
+    (function(){
+      const candidates = ['/background.png','./background.png','assets/background.png','/static/background.png'];
+      function tryNext(i){
+        if (i>=candidates.length) return console.warn('No background image found from candidates');
+        const url = candidates[i];
+        const img = new Image();
+        img.onload = function(){
+          document.documentElement.style.setProperty('--bg-image-url', `url('${url}')`);
+          // also update body::before opacity slightly for clearer image
+          document.body.classList.add('bg-loaded');
+          console.log('Background applied:', url);
+        };
+        img.onerror = function(){ tryNext(i+1); };
+        img.src = url;
+      }
+      tryNext(0);
+    })();
+  </script>
+
+  <!-- Acessório para fechar menu -->
+  <script>
+    // overlay already handles closing the sidebar; keep this minimal
+    const sidebarMenu = document.getElementById('sidebar-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    if (menuOverlay) menuOverlay.addEventListener('click', () => {
+        sidebarMenu.classList.remove('active');
+        menuOverlay.classList.remove('active');
+    });
+  </script>
+</body>
+</html>

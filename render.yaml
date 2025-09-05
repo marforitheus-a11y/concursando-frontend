@@ -1,0 +1,7 @@
+static_web_service:
+  name: quiz-frontend
+  env: static
+  plan: free
+  buildCommand: ""
+  startCommand: ""
+  # To deploy: connect this repo in Render and set the root to the repo root
