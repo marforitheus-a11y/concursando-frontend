@@ -260,7 +260,24 @@ function displaySetupScreen(mainContent, themes = []) {
                 countInput.value = newVal;
                 if (startBtnEl) startBtnEl.disabled = false;
             }
-        } catch (err) { console.warn('refreshCounts failed', err); }
+        } catch (err) {
+            console.warn('refreshCounts failed', err);
+            // Fallback: sum selected themes' per-theme counts if available; otherwise keep Start enabled with a default max
+            const rows = Array.from(document.querySelectorAll('.theme-row input[name="theme"]:checked')).map(cb => cb.closest('.theme-row'));
+            const total = rows.reduce((sum, row) => sum + (parseInt(row.getAttribute('data-qcount'), 10) || 0), 0);
+            const startBtnEl = document.getElementById('start-btn');
+            if (total > 0) {
+                countInput.max = String(total);
+                const cur = parseInt(countInput.value, 10) || 0;
+                const newVal = Math.min(Math.max(cur, 1), total);
+                countInput.value = newVal;
+                if (startBtnEl) startBtnEl.disabled = false;
+            } else {
+                countInput.max = '200';
+                if (!countInput.value || parseInt(countInput.value, 10) <= 0) countInput.value = 5;
+                if (startBtnEl) startBtnEl.disabled = false;
+            }
+        }
     }
     // wire difficulty and theme checkboxes to refresh counts
     document.querySelectorAll('input[name="difficulty"]').forEach(cb => cb.addEventListener('change', refreshCountsForSelectedThemes));
