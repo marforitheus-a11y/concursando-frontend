@@ -107,9 +107,62 @@
     @media (max-width: 420px) {
       .logo-box img { height: 44px; }
     }
+
+    /* Uiverse mobile background: "grumpy-squid-93" by Dennyhml (MIT) */
+    .mobile-bubbles { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; display: none; }
+    /* Ensure content sits above animated background on mobile */
+    @media (max-width: 640px) {
+      .mobile-bubbles { display: block; }
+      .login-wrap { position: relative; z-index: 1; }
+    }
+    .mobile-bubbles .bubble {
+      position: absolute;
+      width: 200px; height: 200px; border-radius: 50%;
+      box-shadow: inset 0 0 25px rgba(255, 255, 255, 0.25);
+      --scale: 1;
+      transform: translateY(0) scale(var(--scale));
+      animation: animate_4010 8s ease-in-out infinite;
+    }
+    /* Placement + stagger (adapted from Uiverse code) */
+    .mobile-bubbles .bubble:nth-child(1) { left: 10%; top: 35%; --scale: 1; }
+    .mobile-bubbles .bubble:nth-child(2) { left: -10px; top: -100px; --scale: .45; animation-delay: -4s; }
+    .mobile-bubbles .bubble:nth-child(3) { right: -80px; top: -300px; --scale: .45; animation-delay: -6s; }
+    .mobile-bubbles .bubble:nth-child(4) { left: -120px; bottom: -200px; --scale: .35; animation-delay: -3s; }
+    .mobile-bubbles .bubble:nth-child(5) { left: 0; top: 200px; --scale: .5; animation-delay: -5s; }
+
+    @keyframes animate_4010 {
+      0%, 100% { transform: translateY(-20px) scale(var(--scale)); }
+      50%      { transform: translateY(20px) scale(var(--scale)); }
+    }
+    .mobile-bubbles .bubble::before {
+      content: '';
+      position: absolute; top: 50px; left: 45px;
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #fff; z-index: 10; filter: blur(2px);
+    }
+    .mobile-bubbles .bubble::after {
+      content: '';
+      position: absolute; top: 80px; left: 80px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #fff; z-index: 10; filter: blur(2px);
+    }
+    .mobile-bubbles .bubble span { position: absolute; border-radius: 50%; }
+    .mobile-bubbles .bubble span:nth-child(1) { inset: 10px; border-left: 15px solid #0fb4ff; filter: blur(8px); }
+    .mobile-bubbles .bubble span:nth-child(2) { inset: 10px; border-right: 15px solid #ff4484; filter: blur(8px); }
+    .mobile-bubbles .bubble span:nth-child(3) { inset: 10px; border-top: 15px solid #ffeb3b; filter: blur(8px); }
+    .mobile-bubbles .bubble span:nth-child(4) { inset: 30px; border-left: 15px solid #ff4484; filter: blur(12px); }
+    .mobile-bubbles .bubble span:nth-child(5) { inset: 10px; border-bottom: 10px solid #ffffff; filter: blur(8px); transform: rotate(330deg); }
   </style>
 </head>
 <body class="login-body">
+  <!-- Mobile-only animated background (Uiverse: grumpy-squid-93) -->
+  <div class="mobile-bubbles" aria-hidden="true">
+    <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="bubble"><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
   <main class="login-wrap" role="main">
     <div class="logo-box" role="img" aria-label="Concursando">
       <img id="app-logo" class="logo-img-header" src="assets/logo.svg" alt="Concursando" />
