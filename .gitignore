@@ -5,3 +5,8 @@ dist/
 *.cache
 *.tmp
 token.txt
+GITHUB_TOKEN
+.env
+.env.*
+.vscode/
+Thumbs.db
