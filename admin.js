@@ -21,7 +21,10 @@
 // --- CÓDIGO PRINCIPAL DO PAINEL DE ADMIN ---
 const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
-const API_URL = 'https://quiz-api-z4ri.onrender.com'; // ⚠️ VERIFIQUE SUA URL AQUI
+// Detect API URL similarly to login.js/quiz.js to keep environments consistent
+const API_URL = (typeof window !== 'undefined' && window.location && window.location.origin)
+    ? (window.location.origin.includes('vercel.app') ? 'https://quiz-api-z4ri.onrender.com' : window.location.origin)
+    : 'http://localhost:3000';
 let categoriesCache = [];
 let usersCache = [];
 
@@ -590,12 +593,18 @@ async function loadCategories() {
     if (!list) return;
     list.innerHTML = '<div class="text-gray-500">Carregando categorias...</div>';
     try {
-        // Try backend first; fall back to localStorage
+        // Try public endpoint first, then admin, then localStorage — avoids 404 noise on older servers
         let categories = null;
         try {
-            const resp = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (resp.ok) categories = await resp.json();
+            const respPublic = await fetch(`${API_URL}/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (respPublic.ok) categories = await respPublic.json();
         } catch (err) { /* ignore */ }
+        if (!categories) {
+            try {
+                const respAdmin = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (respAdmin.ok) categories = await respAdmin.json();
+            } catch (err) { /* ignore */ }
+        }
 
         if (!categories) {
             const raw = localStorage.getItem('local_categories');
