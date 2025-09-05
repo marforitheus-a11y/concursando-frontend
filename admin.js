@@ -21,10 +21,20 @@
 // --- CÓDIGO PRINCIPAL DO PAINEL DE ADMIN ---
 const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
-// Detect API URL similarly to login.js/quiz.js to keep environments consistent
-const API_URL = (typeof window !== 'undefined' && window.location && window.location.origin)
-    ? (window.location.origin.includes('vercel.app') ? 'https://quiz-api-z4ri.onrender.com' : window.location.origin)
-    : 'http://localhost:3000';
+// Detect API URL consistently with quiz.js: support ?api= override and localStorage persistence
+function resolveApiUrl() {
+    try {
+        const u = new URL(window.location.href);
+        const fromParam = u.searchParams.get('api');
+        if (fromParam) { localStorage.setItem('api_url', fromParam); return fromParam; }
+    } catch (_) { /* ignore */ }
+    const stored = localStorage.getItem('api_url');
+    if (stored) return stored;
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : '';
+    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+    return isLocal ? 'http://localhost:3000' : 'https://quiz-api-z4ri.onrender.com';
+}
+const API_URL = resolveApiUrl();
 let categoriesCache = [];
 let usersCache = [];
 
