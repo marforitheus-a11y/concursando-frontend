@@ -112,7 +112,7 @@
 <body class="login-body">
   <main class="login-wrap" role="main">
     <div class="logo-box" role="img" aria-label="Concursando">
-      <img class="logo-img-header" src="assets/logo.svg" alt="Concursando" />
+      <img id="app-logo" class="logo-img-header" src="assets/logo.svg" alt="Concursando" />
       <p class="muted">Sua plataforma de questões por IA</p>
     </div>
 
@@ -192,6 +192,32 @@
           }
         });
       });
+    })();
+  </script>
+  <script>
+    // Try multiple logo paths to guarantee it appears above the form
+    (function(){
+      const candidates = [
+        'assets/logo.svg',
+        'a212705a-8951-474c-bf5e-c4fa68780392.svg',
+        './assets/logo.svg',
+        '/assets/logo.svg',
+        'logo.svg'
+      ];
+      const imgEl = document.getElementById('app-logo');
+      if (!imgEl) return;
+      function tryNext(i){
+        if (i >= candidates.length) return;
+        const test = new Image();
+        test.onload = function(){ imgEl.src = candidates[i]; };
+        test.onerror = function(){ tryNext(i+1); };
+        test.src = candidates[i];
+      }
+      // if initial src fails, try alternatives
+      const initial = new Image();
+      initial.onload = function(){};
+      initial.onerror = function(){ tryNext(0); };
+      initial.src = imgEl.src;
     })();
   </script>
 </body>
