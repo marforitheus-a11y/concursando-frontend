@@ -154,6 +154,57 @@ function showServerError(text) {
     } catch (e) { console.error('showServerError failed', e); }
 }
 
+// Fetch categories with robust fallbacks: /categories -> /admin/categories -> derive from /themes -> localStorage
+async function fetchCategoriesSmart() {
+    // 1) public categories
+    try {
+        const resp = await fetch(`${API_URL}/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (resp.ok) return await resp.json();
+    } catch (_) { /* ignore */ }
+    // 2) admin categories
+    try {
+        const resp = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (resp.ok) return await resp.json();
+    } catch (_) { /* ignore */ }
+    // 3) derive from /themes
+    try {
+        const t = await fetch(`${API_URL}/themes`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (t.ok) {
+            const themes = await t.json();
+            return deriveCategoriesFromThemes(themes);
+        }
+    } catch (_) { /* ignore */ }
+    // 4) localStorage fallback
+    try { const raw = localStorage.getItem('local_categories'); if (raw) return JSON.parse(raw); } catch(_){}
+    return [];
+}
+
+function deriveCategoriesFromThemes(themes) {
+    const map = new Map(); // rootId -> { id, name, children: Map(subId -> obj) }
+    for (const t of (themes || [])) {
+        const rootId = t.parent_cat_id || t.category_parent_id || t.category_id || 'uncat';
+        const rootName = t.parent_cat_name || t.category_name || 'Sem categoria';
+        if (!map.has(rootId)) map.set(rootId, { id: String(rootId), name: rootName, children: new Map() });
+        const root = map.get(rootId);
+        // subcategory if present and distinct from root
+        const subId = t.category_id && t.parent_cat_id ? t.category_id : null;
+        if (subId) {
+            if (!root.children.has(subId)) root.children.set(subId, { id: String(subId), name: t.category_name, children: [] });
+        }
+    }
+    // finalize arrays; also ensure default subcategories exist
+    const categories = [];
+    for (const [, root] of map) {
+        const childrenArr = Array.from(root.children.values());
+        // ensure default pair exists to keep UI consistent
+        const names = new Set(childrenArr.map(c => c.name));
+        if (!names.has('Conhecimentos Básicos')) childrenArr.push({ id: `local-sub-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, name: 'Conhecimentos Básicos', children: [], __local:true });
+        if (!names.has('Conhecimentos Específicos')) childrenArr.push({ id: `local-sub-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, name: 'Conhecimentos Específicos', children: [], __local:true });
+        categories.push({ id: root.id, name: root.name, children: childrenArr });
+    }
+    return categories;
+}
+
 
 // --- FUNÇÕES DE LÓGICA DOS FORMULÁRIOS ---
 async function handleThemeFormSubmit(e) {
@@ -603,23 +654,7 @@ async function loadCategories() {
     if (!list) return;
     list.innerHTML = '<div class="text-gray-500">Carregando categorias...</div>';
     try {
-        // Try public endpoint first, then admin, then localStorage — avoids 404 noise on older servers
-        let categories = null;
-        try {
-            const respPublic = await fetch(`${API_URL}/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (respPublic.ok) categories = await respPublic.json();
-        } catch (err) { /* ignore */ }
-        if (!categories) {
-            try {
-                const respAdmin = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (respAdmin.ok) categories = await respAdmin.json();
-            } catch (err) { /* ignore */ }
-        }
-
-        if (!categories) {
-            const raw = localStorage.getItem('local_categories');
-            categories = raw ? JSON.parse(raw) : [];
-        }
+    const categories = await fetchCategoriesSmart();
         // ensure categoriesCache is updated for other UI pieces
         categoriesCache = categories;
         // ensure each root category has the two subcategories we want (local-only auto-create)
@@ -786,34 +821,7 @@ async function populateCategorySelect() {
     const sel = document.getElementById('categorySelect');
     if (!sel) return;
     sel.innerHTML = '<option value="">Sem categoria</option>';
-    let cats = [];
-    // prefer the cached categories (they may include locally-added default subcats)
-    if (categoriesCache && categoriesCache.length) {
-        cats = categoriesCache;
-    } else {
-        // Try public endpoint first, then admin endpoint, then localStorage as a last resort
-        try {
-            const resp = await fetch(`${API_URL}/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (resp.ok) cats = await resp.json();
-            else {
-                // try admin endpoint as fallback
-                const resp2 = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (resp2.ok) cats = await resp2.json();
-            }
-        } catch (err) {
-            // network/other error - try admin endpoint
-            try {
-                const resp2 = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (resp2.ok) cats = await resp2.json();
-            } catch (e) { /* ignore */ }
-        }
-
-        // fallback to localStorage
-        if ((!cats || cats.length === 0)) {
-            const raw = localStorage.getItem('local_categories');
-            if (raw) cats = JSON.parse(raw);
-        }
-    }
+    let cats = (categoriesCache && categoriesCache.length) ? categoriesCache : await fetchCategoriesSmart();
 
     if (!cats || cats.length === 0) return;
     // cache for other UI pieces
@@ -832,14 +840,7 @@ async function populateCategorySelect() {
 // Prompt admin to choose from available categories and assign to a theme
 async function assignCategoryPrompt(themeId) {
     try {
-        // fetch categories (admin endpoint)
-        const resp = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!resp.ok) {
-            const text = await resp.text();
-            console.error('assignCategoryPrompt: failed to fetch categories', resp.status, text);
-            return alert('Não foi possível buscar categorias no servidor.');
-        }
-        const cats = await resp.json();
+        const cats = await fetchCategoriesSmart();
         // flatten to list
         const flat = [];
         function walk(list, prefix = '') {
