@@ -959,19 +959,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Preflight: check backend health to avoid posting to the wrong host (static frontend)
                 addStatus.textContent = 'Verificando conexão com a API...'; if (fill) fill.style.width = '20%';
-                let healthOk = false;
+                // Health is optional: some deployments may not expose /health; continue anyway and rely on response
                 try {
                     const h = await fetch(`${API_URL}/health`);
-                    if (h && h.ok) healthOk = true;
-                    else healthOk = false;
+                    if (!h.ok) console.warn('Health check not OK:', h.status);
                 } catch (he) {
-                    healthOk = false;
-                }
-                if (!healthOk) {
-                    const endpoint = `${API_URL}/admin/themes/${themeId}/add`;
-                    addStatus.textContent = `Não foi possível alcançar a API em ${API_URL}. Verifique se o backend está ativo e se 'API_URL' está correto. Tentativa de endpoint: ${endpoint}`;
-                    if (fill) fill.style.width = '100%';
-                    return;
+                    console.warn('Health check failed or not present, proceeding:', he);
                 }
 
                 addStatus.textContent = 'Enviando ao servidor...'; if (fill) fill.style.width = '30%';
