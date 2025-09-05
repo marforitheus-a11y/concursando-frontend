@@ -4,9 +4,19 @@
 
 const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
-const API_URL = (typeof window !== 'undefined' && window.location && window.location.origin)
-    ? (window.location.origin.includes('vercel.app') ? 'https://quiz-api-z4ri.onrender.com' : window.location.origin)
-    : 'http://localhost:3000';
+function resolveApiUrl() {
+    try {
+        const u = new URL(window.location.href);
+        const fromParam = u.searchParams.get('api');
+        if (fromParam) { localStorage.setItem('api_url', fromParam); return fromParam; }
+    } catch (_) { /* ignore */ }
+    const stored = localStorage.getItem('api_url');
+    if (stored) return stored;
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : '';
+    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+    return isLocal ? 'http://localhost:3000' : 'https://quiz-api-z4ri.onrender.com';
+}
+const API_URL = resolveApiUrl();
 
 if (!token) {
     // no token => redirect to login
@@ -148,7 +158,7 @@ function displaySetupScreen(mainContent, themes = []) {
                                     rows.forEach(r => {
                                             const subAttr = r.subId ? ` data-sub-id="${r.subId}"` : '';
                                             themeHTML += `
-                                                <div class="theme-row" data-cat-id="${r.catId}"${subAttr}>
+                                                <div class="theme-row" data-cat-id="${r.catId}" data-theme-id="${r.themeId}" data-qcount="${r.question_count}"${subAttr}>
                                                     <label class="theme-left">
                                                         <input type="checkbox" name="theme" value="${r.themeId}">
                                                         <div>
@@ -258,6 +268,36 @@ function displaySetupScreen(mainContent, themes = []) {
     document.addEventListener('change', (e) => { if (e.target && e.target.name === 'theme') refreshCountsForSelectedThemes(); });
     // run once to initialize counts (in case themes are pre-selected)
     setTimeout(() => refreshCountsForSelectedThemes(), 250);
+    // try to populate per-theme counts from server for accuracy
+    (async function hydrateThemeCounts() {
+        try {
+            const ids = Array.from(document.querySelectorAll('.theme-row[data-theme-id]')).map(r => parseInt(r.getAttribute('data-theme-id'), 10)).filter(Boolean);
+            if (ids.length === 0) return;
+            // prefer a single call returning counts grouped by theme
+            let r = await fetch(`${API_URL}/questions/counts-by-theme?themeIds=${encodeURIComponent(ids.join(','))}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!r.ok) {
+                // fallback to POST
+                r = await fetch(`${API_URL}/questions/counts-by-theme`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ themeIds: ids })
+                });
+            }
+            if (r.ok) {
+                const data = await r.json(); // { [themeId]: { easy, medium, hard } }
+                Array.from(document.querySelectorAll('.theme-row[data-theme-id]')).forEach(row => {
+                    const tid = parseInt(row.getAttribute('data-theme-id'), 10);
+                    const counts = data[tid];
+                    if (counts) {
+                        const total = Number(counts.easy || 0) + Number(counts.medium || 0) + Number(counts.hard || 0);
+                        row.setAttribute('data-qcount', String(total));
+                        const el = row.querySelector('.theme-count');
+                        if (el) el.textContent = String(total);
+                    }
+                });
+            }
+        } catch (_) { /* silent; UI already shows base counts */ }
+    })();
     // discipline select behavior: filter rows by selected discipline
     const disciplineSelect = document.getElementById('discipline-select');
     // subjectSelect intentionally omitted (removed from DOM for mobile-friendly layout)
