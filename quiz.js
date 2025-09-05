@@ -264,7 +264,25 @@ function displaySetupScreen(mainContent, themes = []) {
             console.warn('refreshCounts failed', err);
             // Fallback: sum selected themes' per-theme counts if available; otherwise keep Start enabled with a default max
             const rows = Array.from(document.querySelectorAll('.theme-row input[name="theme"]:checked')).map(cb => cb.closest('.theme-row'));
-            const total = rows.reduce((sum, row) => sum + (parseInt(row.getAttribute('data-qcount'), 10) || 0), 0);
+            let total = rows.reduce((sum, row) => sum + (parseInt(row.getAttribute('data-qcount'), 10) || 0), 0);
+            // Deep fallback: try to infer availability by requesting many questions and counting the response length
+            if (!total) {
+                try {
+                    const controller = new AbortController();
+                    const t = setTimeout(() => controller.abort(), 5000);
+                    const r = await fetch(`${API_URL}/questions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ themeIds: selectedThemes, count: 9999, difficulties }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(t);
+                    if (r.ok) {
+                        const arr = await r.json();
+                        if (Array.isArray(arr)) total = arr.length;
+                    }
+                } catch (_) { /* ignore */ }
+            }
             const startBtnEl = document.getElementById('start-btn');
             if (total > 0) {
                 countInput.max = String(total);
