@@ -530,27 +530,68 @@ function renderUsersFiltered(query) {
     if (!usersTableBody) return;
     const q = String(query || '').trim().toLowerCase();
     usersTableBody.innerHTML = '';
-    const list = usersCache.filter(u => !q || (u.username && String(u.username).toLowerCase().includes(q)));
+    const list = usersCache.filter(u => !q || (u.username && String(u.username).toLowerCase().includes(q)) || (u.email && String(u.email).toLowerCase().includes(q)));
     if (list.length === 0) {
-        usersTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500">Nenhum usuário encontrado.</td></tr>`;
+        usersTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500">Nenhum usuário encontrado.</td></tr>`;
         return;
     }
     list.forEach(user => {
-        // determine online status from several possible fields
-        const isActive = !!(user.isActive || user.online || user.is_online || user.last_seen && (Date.now() - new Date(user.last_seen).getTime() < 1000 * 60 * 5)); // treat last_seen within 5m as online
+        const isActive = !!(user.isActive || user.online);
         const statusHtml = `<span class="status-pill ${isActive ? 'online' : 'offline'}">${isActive ? 'Online' : 'Offline'}</span>`;
         const expirationDate = user.subscription_expires_at ? new Date(user.subscription_expires_at).toLocaleDateString('pt-BR') : 'N/A';
-        const row = `
-            <tr>
-                <td>${user.id}</td>
-                <td class="no-break">${user.username}</td>
-                <td>${statusHtml}</td>
-                <td>${expirationDate}</td>
-                <td><button class="btn-delete" onclick="deleteUser(${user.id})">Apagar</button></td>
-            </tr>
+        const isPayChecked = user.is_pay ? 'checked' : '';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td class="no-break">${user.username}</td>
+            <td class="no-break">${user.email || 'N/A'}</td>
+            <td>${statusHtml}</td>
+            <td>
+                <input type="checkbox" class="pay-toggle" data-user-id="${user.id}" ${isPayChecked}>
+                <input type="date" class="expiry-date" data-user-id="${user.id}" value="${user.subscription_expires_at ? user.subscription_expires_at.split('T')[0] : ''}">
+            </td>
+            <td><button class="btn-delete" onclick="deleteUser(${user.id})">Apagar</button></td>
         `;
-        usersTableBody.innerHTML += row;
+        usersTableBody.appendChild(row);
     });
+
+    // Adicionar event listeners para os novos controles
+    document.querySelectorAll('.pay-toggle, .expiry-date').forEach(element => {
+        element.addEventListener('change', handleUserUpdate);
+    });
+}
+
+async function handleUserUpdate(event) {
+    const userId = event.target.dataset.userId;
+    const row = event.target.closest('tr');
+    const isPay = row.querySelector('.pay-toggle').checked;
+    const expiryDate = row.querySelector('.expiry-date').value;
+
+    const updateData = {
+        is_pay: isPay,
+        subscription_expires_at: expiryDate || null
+    };
+
+    try {
+        const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(updateData)
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Erro ao atualizar usuário.');
+        }
+        // Opcional: mostrar uma notificação de sucesso
+    } catch (error) {
+        alert(`Erro: ${error.message}`);
+        // Reverter a mudança na UI em caso de falha
+        loadUsers();
+    }
 }
 
 async function loadActiveSessions() {
