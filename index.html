@@ -100,6 +100,20 @@
     .btn:hover { transform: translateY(-1px); }
     .btn:active { transform: translateY(0); }
 
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 600;
+      box-shadow: none;
+    }
+    .btn.secondary:hover {
+      background: var(--border);
+      color: var(--text);
+      transform: translateY(-1px);
+      box-shadow: none;
+    }
+
     #error-message { min-height: 18px; font-size: 0.9rem; margin-top: 8px; }
     #error-message.error { color: var(--danger); }
     #error-message.pending { color: #f59e0b; }
@@ -170,9 +184,10 @@
           <button type="submit" id="submit-btn" class="btn">Entrar</button>
           <p id="error-message" aria-live="polite"></p>
         </form>
-        <p class="sub" style="text-align: center; margin-top: 16px;">
-          Não tem uma conta? <a href="#" id="show-signup">Cadastre-se</a>
-        </p>
+        <div style="display: grid; gap: 10px; margin-top: 20px;">
+            <p class="sub" style="text-align: center; margin: 0;">Não tem uma conta?</p>
+            <button id="show-signup" class="btn secondary">Cadastre-se</button>
+        </div>
       </div>
 
       <div id="signup-view" style="display: none;">
