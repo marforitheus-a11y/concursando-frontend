@@ -300,6 +300,7 @@
         const signupForm = document.getElementById('signup-form');
         const errorMessage = document.getElementById('error-message');
         const signupErrorMessage = document.getElementById('signup-error-message');
+        const socialLoginButtons = document.querySelectorAll('.social-btn');
 
         document.getElementById('show-signup').addEventListener('click', (e) => {
           e.preventDefault();
@@ -311,6 +312,14 @@
           e.preventDefault();
           signupView.style.display = 'none';
           loginView.style.display = 'block';
+        });
+
+        socialLoginButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const provider = button.getAttribute('aria-label').split(' ')[2].toLowerCase();
+                window.location.href = `${API_URL}/auth/${provider}`;
+            });
         });
 
         authForm.addEventListener('submit', async (e) => {

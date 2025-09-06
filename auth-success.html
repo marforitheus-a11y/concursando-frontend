@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticação bem-sucedida</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        .container {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login bem-sucedido!</h1>
+        <p>Você será redirecionado em breve...</p>
+    </div>
+
+    <script>
+        (function() {
+            try {
+                // Extrai o token da URL
+                const params = new URLSearchParams(window.location.search);
+                const token = params.get('token');
+
+                if (token) {
+                    // Salva o token no localStorage
+                    localStorage.setItem('token', token);
+
+                    // Decodifica o token para obter o nome de usuário e o papel (role)
+                    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    if (payload.username) {
+                        localStorage.setItem('username', payload.username);
+                    }
+
+                    // Redireciona para a página correta com base no papel do usuário
+                    if (payload.role === 'admin') {
+                        window.location.href = '/admin.html';
+                    } else {
+                        window.location.href = '/quiz.html';
+                    }
+                } else {
+                    throw new Error('Token não encontrado na URL.');
+                }
+            } catch (error) {
+                console.error('Falha ao processar o login social:', error);
+                // Exibe uma mensagem de erro e redireciona para a página de login
+                const container = document.querySelector('.container');
+                container.innerHTML = '<h1>Erro na autenticação</h1><p>Houve um problema ao tentar fazer o login. Redirecionando para a página inicial.</p>';
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 3000);
+            }
+        })();
+    </script>
+</body>
+</html>
