@@ -114,6 +114,50 @@
       box-shadow: none;
     }
 
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: 24px 0;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border);
+    }
+    .divider:not(:empty)::before { margin-right: .75em; }
+    .divider:not(:empty)::after { margin-left: .75em; }
+
+    .social-logins {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .social-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background-color: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    .social-btn:hover {
+      background-color: var(--border);
+      color: var(--text);
+      transform: translateY(-2px);
+    }
+    .social-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+
     #error-message { min-height: 18px; font-size: 0.9rem; margin-top: 8px; }
     #error-message.error { color: var(--danger); }
     #error-message.pending { color: #f59e0b; }
@@ -184,6 +228,21 @@
           <button type="submit" id="submit-btn" class="btn">Entrar</button>
           <p id="error-message" aria-live="polite"></p>
         </form>
+
+        <div class="divider">Ou entre com</div>
+
+        <div class="social-logins">
+          <button class="social-btn" aria-label="Entrar com Google">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 109.8 512 0 402.2 0 261.8 0 120.5 109.8 8.6 244 8.6c77.7 0 142 30.4 187.2 73.4l-66.5 64.2c-25.5-24.3-61.5-38.9-120.7-38.9-96.9 0-175.8 78.8-175.8 176.2s78.9 176.2 175.8 176.2c100.9 0 149.9-74.4 155.3-114.2H244v-8h244z"/></svg>
+          </button>
+          <button class="social-btn" aria-label="Entrar com Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.8 89.4 226.4 209.2 245V327.7h-63V256h63v-54.6c0-62.2 37-96.5 93.7-96.5 27.1 0 55.5 4.8 55.5 4.8v61h-31.3c-30.8 0-40.4 19.1-40.4 38.7V256h68.8l-11 71.7h-57.8V501C414.6 482.4 504 379.8 504 256z"/></svg>
+          </button>
+          <button class="social-btn" aria-label="Entrar com Twitter">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+          </button>
+        </div>
+
         <div style="display: grid; gap: 10px; margin-top: 20px;">
             <p class="sub" style="text-align: center; margin: 0;">Não tem uma conta?</p>
             <button id="show-signup" class="btn secondary">Cadastre-se</button>
