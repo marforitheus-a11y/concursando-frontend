@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const usersTableBody = document.getElementById('users-table-body');
     const reportsTableBody = document.getElementById('reports-table-body');
     const reloadUsersBtn = document.getElementById('reload-users-btn');
+    const createTestReportsBtn = document.getElementById('create-test-reports-btn');
     
     // Elementos do Modal de Reset
     const resetModal = document.getElementById('reset-modal');
@@ -104,6 +105,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (reloadUsersBtn) {
         reloadUsersBtn.addEventListener('click', loadUsers);
+    }
+    
+    if (createTestReportsBtn) {
+        createTestReportsBtn.addEventListener('click', createTestReports);
     }
     // search input for users
     const userSearch = document.getElementById('user-search');
@@ -728,6 +733,34 @@ async function loadReports() {
     } catch (err) {
         console.error('Erro loadReports:', err);
         body.innerHTML = `<tr><td colspan="4" class="text-red-600">Erro ao carregar reportes: ${err.message}</td></tr>`;
+    }
+}
+
+async function createTestReports() {
+    try {
+        console.log('Criando reportes de teste...');
+        const response = await fetch(`${API_URL}/admin/create-test-reports`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('Reportes de teste criados:', result);
+            alert(`Reportes de teste criados! IDs: ${result.created_ids.join(', ')}`);
+            // Recarregar a lista de reportes
+            await loadReports();
+        } else {
+            const error = await response.text();
+            console.error('Erro ao criar reportes de teste:', error);
+            alert('Erro ao criar reportes de teste: ' + error);
+        }
+    } catch (error) {
+        console.error('Erro na criação de reportes de teste:', error);
+        alert('Erro na criação de reportes de teste: ' + error.message);
     }
 }
 

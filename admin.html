@@ -466,7 +466,12 @@
 
       <!-- Últimos Reportes de Erro -->
       <section aria-labelledby="error-reports-title">
-        <h2 id="error-reports-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Últimos Reportes de Erro</h2>
+        <div class="flex justify-between items-center mb-6 border-b border-gray-300 pb-2">
+          <h2 id="error-reports-title" class="text-2xl font-bold text-gray-900">Últimos Reportes de Erro</h2>
+          <button id="create-test-reports-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+            Criar Reportes de Teste
+          </button>
+        </div>
         <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
           <table class="min-w-full table-auto border-collapse text-left text-gray-800">
             <thead class="bg-blue-600 text-white select-none">
