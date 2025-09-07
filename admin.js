@@ -1219,3 +1219,755 @@ async function addSubcategoryToThemePrompt(themeId) {
         alert('Erro ao criar subcategoria.');
     }
 }
+
+// ==================================================================
+// SISTEMA DE GERENCIAMENTO DE QUESTÕES
+// ==================================================================
+
+let questionsData = {};
+let currentPath = [];
+let selectedItems = new Set();
+let contextMenu = null;
+
+// Inicializar o sistema de questões
+document.addEventListener('DOMContentLoaded', function() {
+    initQuestionsManager();
+});
+
+function initQuestionsManager() {
+    const refreshBtn = document.getElementById('refresh-questions-btn');
+    const searchInput = document.getElementById('questions-search');
+    const filterSelect = document.getElementById('questions-filter');
+    
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', loadQuestionsData);
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(filterQuestions, 300));
+    }
+    
+    if (filterSelect) {
+        filterSelect.addEventListener('change', filterQuestions);
+    }
+    
+    // Carregar dados iniciais
+    loadQuestionsData();
+    
+    // Event listeners globais
+    document.addEventListener('click', hideContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+}
+
+async function loadQuestionsData() {
+    try {
+        const explorer = document.getElementById('questions-explorer');
+        if (!explorer) return;
+        
+        explorer.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                <p>Carregando questões...</p>
+            </div>
+        `;
+        
+        // Carregar categorias e questões
+        const [categoriesRes, questionsRes] = await Promise.all([
+            fetch(`${API_URL}/admin/categories`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch(`${API_URL}/admin/questions`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+        
+        if (!categoriesRes.ok || !questionsRes.ok) {
+            throw new Error('Erro ao carregar dados');
+        }
+        
+        const categories = await categoriesRes.json();
+        const questions = await questionsRes.json();
+        
+        // Organizar dados em estrutura hierárquica
+        questionsData = organizeQuestionsData(categories, questions);
+        
+        // Renderizar vista atual
+        renderCurrentView();
+        
+    } catch (error) {
+        console.error('Erro ao carregar questões:', error);
+        const explorer = document.getElementById('questions-explorer');
+        if (explorer) {
+            explorer.innerHTML = `
+                <div class="text-center py-8 text-red-500">
+                    <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+                    <p>Erro ao carregar questões</p>
+                    <button onclick="loadQuestionsData()" class="mt-2 btn-primary">
+                        <i class="fas fa-redo mr-1"></i>Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+function organizeQuestionsData(categories, questions) {
+    const data = {
+        folders: {},
+        questions: {}
+    };
+    
+    // Organizar categorias
+    categories.forEach(cat => {
+        if (!cat.parent_id) {
+            // Categoria principal
+            data.folders[cat.id] = {
+                id: cat.id,
+                name: cat.name,
+                type: 'category',
+                children: [],
+                questions: [],
+                parent: null
+            };
+        }
+    });
+    
+    // Adicionar subcategorias
+    categories.forEach(cat => {
+        if (cat.parent_id && data.folders[cat.parent_id]) {
+            data.folders[cat.id] = {
+                id: cat.id,
+                name: cat.name,
+                type: 'subcategory',
+                children: [],
+                questions: [],
+                parent: cat.parent_id
+            };
+            data.folders[cat.parent_id].children.push(cat.id);
+        }
+    });
+    
+    // Organizar questões por categoria
+    questions.forEach(q => {
+        if (q.category_id && data.folders[q.category_id]) {
+            data.folders[q.category_id].questions.push(q);
+        } else {
+            // Questões sem categoria
+            if (!data.folders['uncategorized']) {
+                data.folders['uncategorized'] = {
+                    id: 'uncategorized',
+                    name: 'Sem Categoria',
+                    type: 'category',
+                    children: [],
+                    questions: [],
+                    parent: null
+                };
+            }
+            data.folders['uncategorized'].questions.push(q);
+        }
+        data.questions[q.id] = q;
+    });
+    
+    return data;
+}
+
+function renderCurrentView() {
+    const explorer = document.getElementById('questions-explorer');
+    const breadcrumb = document.getElementById('questions-breadcrumb');
+    
+    if (!explorer || !breadcrumb) return;
+    
+    updateBreadcrumb();
+    
+    let currentData;
+    if (currentPath.length === 0) {
+        // Vista raiz - mostrar categorias principais
+        currentData = Object.values(questionsData.folders)
+            .filter(f => f.parent === null)
+            .sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+        // Vista de categoria/subcategoria
+        const currentId = currentPath[currentPath.length - 1];
+        const currentFolder = questionsData.folders[currentId];
+        
+        if (!currentFolder) {
+            navigateToRoot();
+            return;
+        }
+        
+        currentData = [
+            // Subpastas
+            ...currentFolder.children.map(id => questionsData.folders[id]),
+            // Questões
+            ...currentFolder.questions
+        ].filter(Boolean);
+    }
+    
+    renderItems(currentData, explorer);
+}
+
+function renderItems(items, container) {
+    if (items.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-folder-open text-3xl mb-2"></i>
+                <p>Pasta vazia</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = items.map(item => {
+        if (item.type === 'category' || item.type === 'subcategory') {
+            return renderFolderItem(item);
+        } else {
+            return renderQuestionItem(item);
+        }
+    }).join('');
+    
+    // Adicionar event listeners
+    addItemEventListeners();
+}
+
+function renderFolderItem(folder) {
+    const questionCount = folder.questions.length;
+    const subfolderCount = folder.children.length;
+    const reportedCount = folder.questions.filter(q => q.reported).length;
+    
+    return `
+        <div class="explorer-item" data-type="folder" data-id="${folder.id}">
+            <div class="folder-icon">
+                <i class="fas fa-folder"></i>
+            </div>
+            <div class="item-details">
+                <div class="item-name">${folder.name}</div>
+                <div class="item-meta">
+                    ${questionCount} questões
+                    ${subfolderCount > 0 ? `, ${subfolderCount} subpastas` : ''}
+                    ${reportedCount > 0 ? `, ${reportedCount} reportadas` : ''}
+                </div>
+            </div>
+            <div class="item-stats">
+                <span><i class="fas fa-question-circle mr-1"></i>${questionCount}</span>
+                ${reportedCount > 0 ? `<span class="text-red-600"><i class="fas fa-exclamation-triangle mr-1"></i>${reportedCount}</span>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function renderQuestionItem(question) {
+    const isReported = question.reported || question.report_count > 0;
+    const reportedClass = isReported ? ' reported' : '';
+    
+    return `
+        <div class="explorer-item${reportedClass}" data-type="question" data-id="${question.id}">
+            <div class="question-icon${isReported ? ' reported' : ''}">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="item-details">
+                <div class="item-name">${truncateText(question.question || 'Questão sem texto', 60)}</div>
+                <div class="item-meta">
+                    Dificuldade: ${question.difficulty || 'N/A'} • 
+                    Criada em: ${formatDate(question.created_at)}
+                    ${isReported ? ` • <span class="text-red-600 font-semibold">REPORTADA</span>` : ''}
+                </div>
+            </div>
+            <div class="item-stats">
+                ${isReported ? `<span class="text-red-600"><i class="fas fa-flag mr-1"></i>Reportada</span>` : ''}
+                <span><i class="fas fa-eye mr-1"></i>${question.view_count || 0}</span>
+            </div>
+        </div>
+    `;
+}
+
+function addItemEventListeners() {
+    const items = document.querySelectorAll('.explorer-item');
+    
+    items.forEach(item => {
+        // Click para navegar
+        item.addEventListener('click', handleItemClick);
+        
+        // Context menu (botão direito)
+        item.addEventListener('contextmenu', handleContextMenu);
+        
+        // Duplo clique para ação rápida
+        item.addEventListener('dblclick', handleItemDoubleClick);
+    });
+}
+
+function handleItemClick(event) {
+    const item = event.currentTarget;
+    const type = item.dataset.type;
+    const id = item.dataset.id;
+    
+    // Limpar seleção anterior
+    document.querySelectorAll('.explorer-item.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+    
+    // Selecionar item atual
+    item.classList.add('selected');
+    selectedItems.clear();
+    selectedItems.add(id);
+    
+    if (type === 'folder') {
+        // Navegar para pasta
+        setTimeout(() => navigateToFolder(id), 200);
+    }
+}
+
+function handleItemDoubleClick(event) {
+    event.preventDefault();
+    const item = event.currentTarget;
+    const type = item.dataset.type;
+    const id = item.dataset.id;
+    
+    if (type === 'question') {
+        editQuestion(id);
+    }
+}
+
+function handleContextMenu(event) {
+    event.preventDefault();
+    const item = event.currentTarget;
+    const type = item.dataset.type;
+    const id = item.dataset.id;
+    
+    showContextMenu(event.clientX, event.clientY, type, id);
+}
+
+function showContextMenu(x, y, type, id) {
+    hideContextMenu();
+    
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.style.left = `${x}px`;
+    menu.style.top = `${y}px`;
+    
+    let menuItems = [];
+    
+    if (type === 'folder') {
+        menuItems = [
+            { icon: 'fas fa-folder-open', text: 'Abrir', action: () => navigateToFolder(id) },
+            { icon: 'fas fa-edit', text: 'Renomear', action: () => renameFolder(id) },
+            { icon: 'fas fa-plus', text: 'Nova Subcategoria', action: () => createSubfolder(id) },
+            { icon: 'fas fa-trash', text: 'Excluir', action: () => deleteFolder(id), class: 'danger' }
+        ];
+    } else if (type === 'question') {
+        const question = questionsData.questions[id];
+        const isReported = question && (question.reported || question.report_count > 0);
+        
+        menuItems = [
+            { icon: 'fas fa-eye', text: 'Visualizar', action: () => viewQuestion(id) },
+            { icon: 'fas fa-edit', text: 'Editar', action: () => editQuestion(id) },
+            { icon: 'fas fa-copy', text: 'Duplicar', action: () => duplicateQuestion(id) },
+            ...(isReported ? [
+                { icon: 'fas fa-check', text: 'Marcar como Resolvida', action: () => markQuestionAsResolved(id) }
+            ] : []),
+            { icon: 'fas fa-trash', text: 'Excluir', action: () => deleteQuestion(id), class: 'danger' }
+        ];
+    }
+    
+    menu.innerHTML = menuItems.map(item => `
+        <div class="context-menu-item ${item.class || ''}" onclick="${item.action.name}('${id}')">
+            <i class="${item.icon}"></i>
+            <span>${item.text}</span>
+        </div>
+    `).join('');
+    
+    document.body.appendChild(menu);
+    contextMenu = menu;
+    
+    // Ajustar posição se sair da tela
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+        menu.style.left = `${x - rect.width}px`;
+    }
+    if (rect.bottom > window.innerHeight) {
+        menu.style.top = `${y - rect.height}px`;
+    }
+}
+
+function hideContextMenu() {
+    if (contextMenu) {
+        contextMenu.remove();
+        contextMenu = null;
+    }
+}
+
+function navigateToRoot() {
+    currentPath = [];
+    renderCurrentView();
+}
+
+function navigateToFolder(folderId) {
+    if (!questionsData.folders[folderId]) return;
+    
+    currentPath.push(folderId);
+    renderCurrentView();
+}
+
+function updateBreadcrumb() {
+    const breadcrumb = document.getElementById('questions-breadcrumb');
+    if (!breadcrumb) return;
+    
+    let html = `
+        <div class="flex items-center gap-2 text-sm">
+            <i class="fas fa-home text-blue-600"></i>
+            <span class="text-blue-600 cursor-pointer" onclick="navigateToRoot()">Questões</span>
+    `;
+    
+    currentPath.forEach((folderId, index) => {
+        const folder = questionsData.folders[folderId];
+        if (folder) {
+            html += `
+                <i class="fas fa-chevron-right text-gray-400 mx-1"></i>
+                <span class="text-blue-600 cursor-pointer" onclick="navigateToPath(${index + 1})">${folder.name}</span>
+            `;
+        }
+    });
+    
+    html += '</div>';
+    breadcrumb.innerHTML = html;
+}
+
+function navigateToPath(depth) {
+    currentPath = currentPath.slice(0, depth);
+    renderCurrentView();
+}
+
+// Funções de ação do menu de contexto
+async function viewQuestion(questionId) {
+    const question = questionsData.questions[questionId];
+    if (!question) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-96 overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Visualizar Questão</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="font-semibold text-gray-700">Pergunta:</label>
+                    <p class="mt-1 p-3 bg-gray-50 rounded">${question.question}</p>
+                </div>
+                <div>
+                    <label class="font-semibold text-gray-700">Opções:</label>
+                    <div class="mt-1 space-y-2">
+                        ${(question.options || []).map((opt, i) => 
+                            `<p class="p-2 bg-gray-50 rounded">${String.fromCharCode(65 + i)}) ${opt}</p>`
+                        ).join('')}
+                    </div>
+                </div>
+                <div>
+                    <label class="font-semibold text-gray-700">Resposta Correta:</label>
+                    <p class="mt-1 p-3 bg-green-50 text-green-800 rounded">${question.answer}</p>
+                </div>
+                <div class="flex gap-4 text-sm text-gray-600">
+                    <span>Dificuldade: ${question.difficulty || 'N/A'}</span>
+                    <span>Categoria: ${question.category_name || 'Sem categoria'}</span>
+                    ${question.report_count > 0 ? `<span class="text-red-600">Reports: ${question.report_count}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function editQuestion(questionId) {
+    const question = questionsData.questions[questionId];
+    if (!question) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-screen overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Editar Questão</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="edit-question-form" class="space-y-4">
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-2">Pergunta:</label>
+                    <textarea name="question" rows="3" class="w-full p-3 border rounded-lg">${question.question}</textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-2">Opções (uma por linha):</label>
+                    <textarea name="options" rows="4" class="w-full p-3 border rounded-lg">${(question.options || []).join('\\n')}</textarea>
+                </div>
+                <div>
+                    <label class="block font-semibold text-gray-700 mb-2">Resposta Correta:</label>
+                    <input type="text" name="answer" class="w-full p-3 border rounded-lg" value="${question.answer}">
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Handle form submission
+    modal.querySelector('#edit-question-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const options = formData.get('options').split('\\n').filter(opt => opt.trim());
+        
+        try {
+            const response = await fetch(`${API_URL}/admin/questions/${questionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    question: formData.get('question'),
+                    options: options,
+                    answer: formData.get('answer')
+                })
+            });
+            
+            if (response.ok) {
+                modal.remove();
+                await loadQuestionsData();
+                alert('Questão atualizada com sucesso!');
+            } else {
+                const error = await response.json();
+                alert('Erro ao atualizar questão: ' + (error.message || 'Erro desconhecido'));
+            }
+        } catch (error) {
+            console.error('Erro ao salvar questão:', error);
+            alert('Erro ao salvar questão');
+        }
+    });
+}
+
+async function duplicateQuestion(questionId) {
+    if (!confirm('Deseja duplicar esta questão?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/questions/${questionId}/duplicate`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            await loadQuestionsData();
+            alert('Questão duplicada com sucesso!');
+        } else {
+            const error = await response.json();
+            alert('Erro ao duplicar questão: ' + (error.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao duplicar questão:', error);
+        alert('Erro ao duplicar questão');
+    }
+}
+
+async function deleteQuestion(questionId) {
+    const question = questionsData.questions[questionId];
+    if (!question) return;
+    
+    if (!confirm('Tem certeza que deseja excluir esta questão? Esta ação não pode ser desfeita.')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/questions/${questionId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            await loadQuestionsData();
+            alert('Questão excluída com sucesso!');
+        } else {
+            const error = await response.json();
+            alert('Erro ao excluir questão: ' + (error.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao excluir questão:', error);
+        alert('Erro ao excluir questão');
+    }
+}
+
+async function markQuestionAsResolved(questionId) {
+    if (!confirm('Marcar todos os reports desta questão como resolvidos?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/questions/${questionId}/resolve-reports`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            await loadQuestionsData();
+            const result = await response.json();
+            alert(`${result.resolved_count} reports foram resolvidos!`);
+        } else {
+            const error = await response.json();
+            alert('Erro ao resolver reports: ' + (error.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao resolver reports:', error);
+        alert('Erro ao resolver reports');
+    }
+}
+
+async function renameFolder(folderId) {
+    const folder = questionsData.folders[folderId];
+    if (!folder) return;
+    
+    const newName = prompt('Novo nome:', folder.name);
+    if (!newName || !newName.trim() || newName.trim() === folder.name) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/categories/${folderId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ name: newName.trim() })
+        });
+        
+        if (response.ok) {
+            await loadQuestionsData();
+            alert('Categoria renomeada com sucesso!');
+        } else {
+            const error = await response.json();
+            alert('Erro ao renomear categoria: ' + (error.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao renomear categoria:', error);
+        alert('Erro ao renomear categoria');
+    }
+}
+
+async function createSubfolder(parentId) {
+    const name = prompt('Nome da nova subcategoria:');
+    if (!name || !name.trim()) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/categories`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ 
+                name: name.trim(),
+                parent_id: parentId
+            })
+        });
+        
+        if (response.ok) {
+            await loadQuestionsData();
+            alert('Subcategoria criada com sucesso!');
+        } else {
+            const error = await response.json();
+            alert('Erro ao criar subcategoria: ' + (error.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao criar subcategoria:', error);
+        alert('Erro ao criar subcategoria');
+    }
+}
+
+async function deleteFolder(folderId) {
+    const folder = questionsData.folders[folderId];
+    if (!folder) return;
+    
+    const questionCount = folder.questions.length;
+    const subfolderCount = folder.children.length;
+    
+    let message = `Tem certeza que deseja excluir a categoria "${folder.name}"?`;
+    if (questionCount > 0 || subfolderCount > 0) {
+        message += `\\n\\nIsto excluirá:\\n- ${questionCount} questões\\n- ${subfolderCount} subcategorias`;
+    }
+    message += '\\n\\nEsta ação não pode ser desfeita.';
+    
+    if (!confirm(message)) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/categories/${folderId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            // Navegar para pasta pai se estamos dentro da pasta excluída
+            if (currentPath.includes(folderId)) {
+                const index = currentPath.indexOf(folderId);
+                currentPath = currentPath.slice(0, index);
+            }
+            await loadQuestionsData();
+            alert('Categoria excluída com sucesso!');
+        } else {
+            const error = await response.json();
+            alert('Erro ao excluir categoria: ' + (error.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao excluir categoria:', error);
+        alert('Erro ao excluir categoria');
+    }
+}
+
+function filterQuestions() {
+    const searchTerm = document.getElementById('questions-search')?.value?.toLowerCase() || '';
+    const filter = document.getElementById('questions-filter')?.value || 'all';
+    
+    // Implementar filtros
+    renderCurrentView();
+}
+
+function handleKeyDown(event) {
+    if (event.key === 'Delete' && selectedItems.size > 0) {
+        // Excluir itens selecionados
+        Array.from(selectedItems).forEach(id => {
+            const item = document.querySelector(`[data-id="${id}"]`);
+            const type = item?.dataset.type;
+            
+            if (type === 'question') {
+                deleteQuestion(id);
+            } else if (type === 'folder') {
+                deleteFolder(id);
+            }
+        });
+    }
+}
+
+// Utilitários
+function truncateText(text, maxLength) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('pt-BR');
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
