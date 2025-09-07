@@ -1347,22 +1347,24 @@ function organizeQuestionsData(categories, questions) {
         }
     });
     
+    // Garantir que existe uma pasta para questões sem categoria
+    if (!data.folders['uncategorized']) {
+        data.folders['uncategorized'] = {
+            id: 'uncategorized',
+            name: 'Sem Categoria',
+            type: 'category',
+            children: [],
+            questions: [],
+            parent: null
+        };
+    }
+    
     // Organizar questões por categoria
     questions.forEach(q => {
         if (q.category_id && data.folders[q.category_id]) {
             data.folders[q.category_id].questions.push(q);
         } else {
-            // Questões sem categoria
-            if (!data.folders['uncategorized']) {
-                data.folders['uncategorized'] = {
-                    id: 'uncategorized',
-                    name: 'Sem Categoria',
-                    type: 'category',
-                    children: [],
-                    questions: [],
-                    parent: null
-                };
-            }
+            // Questões sem categoria ou categoria inexistente
             data.folders['uncategorized'].questions.push(q);
         }
         data.questions[q.id] = q;
