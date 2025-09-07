@@ -67,6 +67,20 @@ async function debugAdminFunctions() {
                 const questionId = questions[0].id;
                 console.log('Testando exclusão da questão ID:', questionId);
                 
+                // Primeiro verificar dependências
+                console.log('Verificando dependências da questão...');
+                const depResponse = await fetch(`${API_URL}/admin/questions/${questionId}/dependencies`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (depResponse.ok) {
+                    const dependencies = await depResponse.json();
+                    console.log('Dependências encontradas:', dependencies);
+                } else {
+                    console.log('Erro ao verificar dependências:', depResponse.status);
+                }
+                
+                // Agora tentar excluir
                 const deleteResponse = await fetch(`${API_URL}/admin/questions/${questionId}`, {
                     method: 'DELETE',
                     headers: { 
