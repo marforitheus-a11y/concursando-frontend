@@ -1587,7 +1587,6 @@ function showContextMenu(x, y, type, id) {
         menuItems = [
             { icon: 'fas fa-eye', text: 'Visualizar', action: () => viewQuestion(id) },
             { icon: 'fas fa-edit', text: 'Editar', action: () => editQuestion(id) },
-            { icon: 'fas fa-copy', text: 'Duplicar', action: () => duplicateQuestion(id) },
             ...(isReported ? [
                 { icon: 'fas fa-check', text: 'Marcar como Resolvida', action: () => markQuestionAsResolved(id) }
             ] : []),
@@ -1595,12 +1594,21 @@ function showContextMenu(x, y, type, id) {
         ];
     }
     
-    menu.innerHTML = menuItems.map(item => `
-        <div class="context-menu-item ${item.class || ''}" onclick="${item.action.name}('${id}')">
+    menu.innerHTML = menuItems.map((item, index) => `
+        <div class="context-menu-item ${item.class || ''}" data-action-index="${index}">
             <i class="${item.icon}"></i>
             <span>${item.text}</span>
         </div>
     `).join('');
+    
+    // Adicionar event listeners para cada item
+    menu.querySelectorAll('.context-menu-item').forEach((element, index) => {
+        element.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hideContextMenu();
+            menuItems[index].action();
+        });
+    });
     
     document.body.appendChild(menu);
     contextMenu = menu;
@@ -1922,28 +1930,6 @@ async function editQuestion(questionId) {
             alert('Erro ao salvar questão: ' + error.message);
         }
     });
-}
-
-async function duplicateQuestion(questionId) {
-    if (!confirm('Deseja duplicar esta questão?')) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/admin/questions/${questionId}/duplicate`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-            await loadQuestionsData();
-            alert('Questão duplicada com sucesso!');
-        } else {
-            const error = await response.json();
-            alert('Erro ao duplicar questão: ' + (error.message || 'Erro desconhecido'));
-        }
-    } catch (error) {
-        console.error('Erro ao duplicar questão:', error);
-        alert('Erro ao duplicar questão');
-    }
 }
 
 async function deleteQuestion(questionId) {
