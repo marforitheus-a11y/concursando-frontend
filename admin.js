@@ -1366,6 +1366,9 @@ function organizeQuestionsData(categories, questions) {
         const theme = category.themes.get(themeKey);
         theme.questions.push(q);
         
+        // Também adicionar questão à categoria (para contagem total)
+        category.questions.push(q);
+        
         // Adicionar ao mapa global de questões
         data.questions[q.id] = q;
     });
@@ -1377,7 +1380,7 @@ function organizeQuestionsData(categories, questions) {
             name: category.name,
             type: category.type,
             children: category.children,
-            questions: category.questions,
+            questions: category.questions, // Agora inclui todas as questões da categoria
             parent: category.parent
         };
         
