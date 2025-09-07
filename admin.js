@@ -1435,7 +1435,7 @@ function organizeQuestionsData(categories, questions) {
             name: category.name,
             type: category.type,
             children: category.children,
-            questions: category.questions, // Agora inclui todas as questões da categoria
+            questions: category.questions, // Para contagem total, mas não para exibição direta
             parent: category.parent
         };
         
@@ -1446,7 +1446,7 @@ function organizeQuestionsData(categories, questions) {
                 name: theme.name,
                 type: theme.type,
                 children: theme.children,
-                questions: theme.questions,
+                questions: theme.questions, // Questões ficam apenas nos temas para exibição
                 parent: theme.parent,
                 theme_id: theme.theme_id
             };
@@ -1480,12 +1480,26 @@ function renderCurrentView() {
             return;
         }
         
-        currentData = [
-            // Subpastas
-            ...currentFolder.children.map(id => questionsData.folders[id]),
-            // Questões
-            ...currentFolder.questions
-        ].filter(Boolean);
+        // Se estivermos em uma categoria, mostrar apenas os temas (filhos)
+        // Se estivermos em um tema, mostrar as questões
+        if (currentFolder.type === 'category') {
+            // Mostrar apenas subpastas (temas), nunca questões diretamente na categoria
+            currentData = currentFolder.children
+                .map(id => questionsData.folders[id])
+                .filter(Boolean)
+                .sort((a, b) => a.name.localeCompare(b.name));
+        } else if (currentFolder.type === 'theme') {
+            // Mostrar questões do tema
+            currentData = currentFolder.questions || [];
+        } else {
+            // Fallback para outros tipos
+            currentData = [
+                // Subpastas
+                ...currentFolder.children.map(id => questionsData.folders[id]),
+                // Questões apenas se não for categoria
+                ...(currentFolder.type !== 'category' ? currentFolder.questions : [])
+            ].filter(Boolean);
+        }
     }
     
     renderItems(currentData, explorer);
