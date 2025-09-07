@@ -658,22 +658,41 @@ async function loadActiveSessions() {
     // Implemente se desejar
 }
 async function loadReports() {
+    console.log('loadReports: Iniciando carregamento de reportes...');
     const body = document.getElementById('reports-table-body');
-    if (!body) return;
+    if (!body) {
+        console.error('loadReports: Elemento reports-table-body não encontrado');
+        return;
+    }
+    
     try {
-        const resp = await fetch(`${API_URL}/admin/reports`, { headers: { 'Authorization': `Bearer ${token}` } });
+        console.log('loadReports: Fazendo requisição para', `${API_URL}/admin/reports`);
+        console.log('loadReports: Token presente:', token ? 'sim' : 'não');
+        
+        const resp = await fetch(`${API_URL}/admin/reports`, { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        
+        console.log('loadReports: Status da resposta:', resp.status);
+        console.log('loadReports: Response ok:', resp.ok);
+        
         if (!resp.ok) {
             const t = await resp.text();
             console.error('loadReports failed', resp.status, t);
-            body.innerHTML = `<tr><td colspan="4" class="text-red-600">Erro ao carregar reportes.</td></tr>`;
+            body.innerHTML = `<tr><td colspan="4" class="text-red-600">Erro ao carregar reportes: ${resp.status} - ${t}</td></tr>`;
             return;
         }
+        
         const reports = await resp.json();
+        console.log('loadReports: Reportes recebidos:', reports);
+        console.log('loadReports: Número de reportes:', reports ? reports.length : 0);
+        
         body.innerHTML = '';
         if (!reports || reports.length === 0) {
             body.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-500">Nenhum reporte recente.</td></tr>`;
             return;
         }
+        
         reports.forEach(r => {
             const row = document.createElement('tr');
             const detailsPreview = r.details ? (r.details.length > 80 ? r.details.slice(0,77) + '...' : r.details) : '';
@@ -704,8 +723,11 @@ async function loadReports() {
                 } catch (err) { console.error('fetch question failed', err); alert('Erro ao buscar questão. Veja console.'); }
             });
         });
+        
+        console.log('loadReports: Reportes carregados com sucesso');
     } catch (err) {
         console.error('Erro loadReports:', err);
+        body.innerHTML = `<tr><td colspan="4" class="text-red-600">Erro ao carregar reportes: ${err.message}</td></tr>`;
     }
 }
 
