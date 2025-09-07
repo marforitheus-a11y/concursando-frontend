@@ -1461,15 +1461,6 @@ function renderQuestionItem(question) {
     const isReported = question.reported || question.report_count > 0;
     const reportedClass = isReported ? ' reported' : '';
     
-    // Debug: log question structure
-    console.log('Rendering question:', { 
-        id: question.id, 
-        question: question.question?.substring(0, 50) + '...', 
-        options: question.options,
-        hasOptions: Array.isArray(question.options),
-        optionsLength: question.options?.length 
-    });
-    
     return `
         <div class="explorer-item${reportedClass}" data-type="question" data-id="${question.id}">
             <div class="question-icon${isReported ? ' reported' : ''}">
