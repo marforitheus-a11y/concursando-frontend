@@ -1317,57 +1317,77 @@ function organizeQuestionsData(categories, questions) {
         questions: {}
     };
     
-    // Organizar categorias
-    categories.forEach(cat => {
-        if (!cat.parent_id) {
-            // Categoria principal
-            data.folders[cat.id] = {
-                id: cat.id,
-                name: cat.name,
+    // Primeiro, organizar questões por categoria e tema
+    const categoriesMap = new Map();
+    const themesMap = new Map();
+    
+    // Agrupar questões por categoria
+    questions.forEach(q => {
+        const categoryName = q.category_name || 'Sem Categoria';
+        const themeName = q.theme_name || `Tema ${q.theme_id}`;
+        const themeKey = `theme_${q.theme_id}`;
+        const categoryKey = `category_${categoryName.replace(/\s+/g, '_')}`;
+        
+        // Criar categoria se não existir
+        if (!categoriesMap.has(categoryKey)) {
+            categoriesMap.set(categoryKey, {
+                id: categoryKey,
+                name: categoryName,
                 type: 'category',
                 children: [],
                 questions: [],
-                parent: null
-            };
+                parent: null,
+                themes: new Map()
+            });
         }
-    });
-    
-    // Adicionar subcategorias
-    categories.forEach(cat => {
-        if (cat.parent_id && data.folders[cat.parent_id]) {
-            data.folders[cat.id] = {
-                id: cat.id,
-                name: cat.name,
-                type: 'subcategory',
+        
+        const category = categoriesMap.get(categoryKey);
+        
+        // Criar tema dentro da categoria se não existir
+        if (!category.themes.has(themeKey)) {
+            category.themes.set(themeKey, {
+                id: themeKey,
+                name: themeName,
+                type: 'theme',
                 children: [],
                 questions: [],
-                parent: cat.parent_id
-            };
-            data.folders[cat.parent_id].children.push(cat.id);
+                parent: categoryKey,
+                theme_id: q.theme_id
+            });
+            category.children.push(themeKey);
         }
+        
+        // Adicionar questão ao tema
+        const theme = category.themes.get(themeKey);
+        theme.questions.push(q);
+        
+        // Adicionar ao mapa global de questões
+        data.questions[q.id] = q;
     });
     
-    // Garantir que existe uma pasta para questões sem categoria
-    if (!data.folders['uncategorized']) {
-        data.folders['uncategorized'] = {
-            id: 'uncategorized',
-            name: 'Sem Categoria',
-            type: 'category',
-            children: [],
-            questions: [],
-            parent: null
+    // Converter para estrutura final
+    categoriesMap.forEach((category, categoryKey) => {
+        data.folders[categoryKey] = {
+            id: category.id,
+            name: category.name,
+            type: category.type,
+            children: category.children,
+            questions: category.questions,
+            parent: category.parent
         };
-    }
-    
-    // Organizar questões por categoria
-    questions.forEach(q => {
-        if (q.category_id && data.folders[q.category_id]) {
-            data.folders[q.category_id].questions.push(q);
-        } else {
-            // Questões sem categoria ou categoria inexistente
-            data.folders['uncategorized'].questions.push(q);
-        }
-        data.questions[q.id] = q;
+        
+        // Adicionar temas da categoria
+        category.themes.forEach((theme, themeKey) => {
+            data.folders[themeKey] = {
+                id: theme.id,
+                name: theme.name,
+                type: theme.type,
+                children: theme.children,
+                questions: theme.questions,
+                parent: theme.parent,
+                theme_id: theme.theme_id
+            };
+        });
     });
     
     return data;
@@ -1420,7 +1440,7 @@ function renderItems(items, container) {
     }
     
     container.innerHTML = items.map(item => {
-        if (item.type === 'category' || item.type === 'subcategory') {
+        if (item.type === 'category' || item.type === 'subcategory' || item.type === 'theme') {
             return renderFolderItem(item);
         } else {
             return renderQuestionItem(item);
@@ -1436,16 +1456,20 @@ function renderFolderItem(folder) {
     const subfolderCount = folder.children.length;
     const reportedCount = folder.questions.filter(q => q.reported).length;
     
+    // Ícone diferente para temas vs categorias
+    const icon = folder.type === 'theme' ? 'fas fa-bookmark' : 'fas fa-folder';
+    const typeLabel = folder.type === 'theme' ? 'Tema' : 'Categoria';
+    
     return `
         <div class="explorer-item" data-type="folder" data-id="${folder.id}">
             <div class="folder-icon">
-                <i class="fas fa-folder"></i>
+                <i class="${icon}"></i>
             </div>
             <div class="item-details">
                 <div class="item-name">${folder.name}</div>
                 <div class="item-meta">
-                    ${questionCount} questões
-                    ${subfolderCount > 0 ? `, ${subfolderCount} subpastas` : ''}
+                    ${typeLabel} • ${questionCount} questões
+                    ${subfolderCount > 0 ? `, ${subfolderCount} subtemas` : ''}
                     ${reportedCount > 0 ? `, ${reportedCount} reportadas` : ''}
                 </div>
             </div>
@@ -1690,32 +1714,44 @@ async function editQuestion(questionId) {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
     modal.innerHTML = `
-        <div class="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-screen overflow-auto">
-            <div class="flex justify-between items-center mb-4">
+        <div class="bg-white rounded-xl p-6 max-w-4xl w-full mx-4 max-h-screen overflow-auto">
+            <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold">Editar Questão</h3>
                 <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
+                    <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
-            <form id="edit-question-form" class="space-y-4">
+            <form id="edit-question-form" class="space-y-6">
                 <div>
                     <label class="block font-semibold text-gray-700 mb-2">Pergunta:</label>
-                    <textarea name="question" rows="3" class="w-full p-3 border rounded-lg">${question.question}</textarea>
+                    <textarea name="question" rows="3" class="w-full p-3 border rounded-lg resize-none" placeholder="Digite a pergunta aqui...">${question.question}</textarea>
                 </div>
+                
                 <div>
-                    <label class="block font-semibold text-gray-700 mb-2">Opções (uma por linha):</label>
-                    <textarea name="options" rows="4" class="w-full p-3 border rounded-lg">${(question.options || []).join('\\n')}</textarea>
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block font-semibold text-gray-700">Opções de Resposta:</label>
+                        <button type="button" id="add-option-btn" class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600">
+                            <i class="fas fa-plus mr-1"></i>Adicionar Opção
+                        </button>
+                    </div>
+                    <div id="options-container" class="space-y-2">
+                        <!-- Options will be populated here -->
+                    </div>
                 </div>
+                
                 <div>
                     <label class="block font-semibold text-gray-700 mb-2">Resposta Correta:</label>
-                    <input type="text" name="answer" class="w-full p-3 border rounded-lg" value="${question.answer}">
+                    <select name="answer" id="correct-answer-select" class="w-full p-3 border rounded-lg">
+                        <!-- Options will be populated here -->
+                    </select>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="this.closest('.fixed').remove()" class="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        Salvar Alterações
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Salvar Alterações
                     </button>
                 </div>
             </form>
@@ -1724,11 +1760,140 @@ async function editQuestion(questionId) {
     
     document.body.appendChild(modal);
     
+    // Populate options
+    const optionsContainer = modal.querySelector('#options-container');
+    const correctAnswerSelect = modal.querySelector('#correct-answer-select');
+    const addOptionBtn = modal.querySelector('#add-option-btn');
+    
+    let optionIndex = 0;
+    
+    function addOptionField(value = '', isCorrect = false) {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'flex items-center gap-2 option-item';
+        optionDiv.innerHTML = `
+            <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-semibold text-blue-600">
+                ${String.fromCharCode(65 + optionIndex)}
+            </div>
+            <input type="text" class="flex-1 p-2 border rounded-lg option-input" value="${value}" placeholder="Digite a opção aqui...">
+            <button type="button" class="remove-option-btn px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors" ${optionIndex < 2 ? 'style="display: none;"' : ''}>
+                <i class="fas fa-trash text-sm"></i>
+            </button>
+        `;
+        
+        optionsContainer.appendChild(optionDiv);
+        
+        // Add remove functionality
+        const removeBtn = optionDiv.querySelector('.remove-option-btn');
+        removeBtn.addEventListener('click', () => {
+            optionDiv.remove();
+            updateCorrectAnswerOptions();
+            updateOptionLabels();
+        });
+        
+        // Update correct answer options when this input changes
+        const input = optionDiv.querySelector('.option-input');
+        input.addEventListener('input', updateCorrectAnswerOptions);
+        
+        optionIndex++;
+        return optionDiv;
+    }
+    
+    function updateOptionLabels() {
+        const options = optionsContainer.querySelectorAll('.option-item');
+        options.forEach((option, index) => {
+            const label = option.querySelector('.w-8');
+            label.textContent = String.fromCharCode(65 + index);
+            
+            const removeBtn = option.querySelector('.remove-option-btn');
+            if (index < 2) {
+                removeBtn.style.display = 'none';
+            } else {
+                removeBtn.style.display = 'block';
+            }
+        });
+    }
+    
+    function updateCorrectAnswerOptions() {
+        const inputs = optionsContainer.querySelectorAll('.option-input');
+        const currentAnswer = correctAnswerSelect.value;
+        
+        correctAnswerSelect.innerHTML = '';
+        
+        inputs.forEach((input, index) => {
+            if (input.value.trim()) {
+                const option = document.createElement('option');
+                option.value = input.value.trim();
+                option.textContent = `${String.fromCharCode(65 + index)}) ${input.value.trim()}`;
+                correctAnswerSelect.appendChild(option);
+            }
+        });
+        
+        // Restore previous selection if it still exists
+        if (currentAnswer) {
+            const matchingOption = Array.from(correctAnswerSelect.options).find(opt => opt.value === currentAnswer);
+            if (matchingOption) {
+                correctAnswerSelect.value = currentAnswer;
+            }
+        }
+    }
+    
+    // Initialize with existing options
+    const options = Array.isArray(question.options) ? question.options : [];
+    if (options.length === 0) {
+        // Add default empty options
+        addOptionField('');
+        addOptionField('');
+    } else {
+        options.forEach(option => addOptionField(option));
+    }
+    
+    // Add button functionality
+    addOptionBtn.addEventListener('click', () => {
+        if (optionsContainer.children.length < 5) {
+            addOptionField('');
+            updateCorrectAnswerOptions();
+        } else {
+            alert('Máximo de 5 opções permitidas');
+        }
+    });
+    
+    // Initial update
+    updateCorrectAnswerOptions();
+    
+    // Set current correct answer
+    if (question.answer) {
+        setTimeout(() => {
+            correctAnswerSelect.value = question.answer;
+        }, 100);
+    }
+    
     // Handle form submission
     modal.querySelector('#edit-question-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.target);
-        const options = formData.get('options').split('\\n').filter(opt => opt.trim());
+        
+        // Collect options from inputs
+        const optionInputs = optionsContainer.querySelectorAll('.option-input');
+        const options = Array.from(optionInputs)
+            .map(input => input.value.trim())
+            .filter(value => value.length > 0);
+        
+        if (options.length < 2) {
+            alert('Pelo menos 2 opções são obrigatórias');
+            return;
+        }
+        
+        const questionText = modal.querySelector('textarea[name="question"]').value.trim();
+        const correctAnswer = correctAnswerSelect.value;
+        
+        if (!questionText) {
+            alert('A pergunta é obrigatória');
+            return;
+        }
+        
+        if (!correctAnswer) {
+            alert('Selecione a resposta correta');
+            return;
+        }
         
         try {
             const response = await fetch(`${API_URL}/admin/questions/${questionId}`, {
@@ -1738,9 +1903,9 @@ async function editQuestion(questionId) {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    question: formData.get('question'),
+                    question: questionText,
                     options: options,
-                    answer: formData.get('answer')
+                    answer: correctAnswer
                 })
             });
             
@@ -1749,12 +1914,12 @@ async function editQuestion(questionId) {
                 await loadQuestionsData();
                 alert('Questão atualizada com sucesso!');
             } else {
-                const error = await response.json();
-                alert('Erro ao atualizar questão: ' + (error.message || 'Erro desconhecido'));
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao atualizar questão');
             }
         } catch (error) {
             console.error('Erro ao salvar questão:', error);
-            alert('Erro ao salvar questão');
+            alert('Erro ao salvar questão: ' + error.message);
         }
     });
 }
