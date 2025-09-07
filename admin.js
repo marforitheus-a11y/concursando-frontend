@@ -1461,6 +1461,15 @@ function renderQuestionItem(question) {
     const isReported = question.reported || question.report_count > 0;
     const reportedClass = isReported ? ' reported' : '';
     
+    // Debug: log question structure
+    console.log('Rendering question:', { 
+        id: question.id, 
+        question: question.question?.substring(0, 50) + '...', 
+        options: question.options,
+        hasOptions: Array.isArray(question.options),
+        optionsLength: question.options?.length 
+    });
+    
     return `
         <div class="explorer-item${reportedClass}" data-type="question" data-id="${question.id}">
             <div class="question-icon${isReported ? ' reported' : ''}">
@@ -1470,7 +1479,8 @@ function renderQuestionItem(question) {
                 <div class="item-name">${truncateText(question.question || 'Questão sem texto', 60)}</div>
                 <div class="item-meta">
                     Dificuldade: ${question.difficulty || 'N/A'} • 
-                    Criada em: ${formatDate(question.created_at)}
+                    Criada em: ${formatDate(question.created_at)} • 
+                    Opções: ${Array.isArray(question.options) ? question.options.length : 'N/A'}
                     ${isReported ? ` • <span class="text-red-600 font-semibold">REPORTADA</span>` : ''}
                 </div>
             </div>
