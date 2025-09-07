@@ -530,28 +530,83 @@ function renderUsersFiltered(query) {
     if (!usersTableBody) return;
     const q = String(query || '').trim().toLowerCase();
     usersTableBody.innerHTML = '';
-    const list = usersCache.filter(u => !q || (u.username && String(u.username).toLowerCase().includes(q)) || (u.email && String(u.email).toLowerCase().includes(q)));
+    const list = usersCache.filter(u => !q || (u.username && String(u.username).toLowerCase().includes(q)) || (u.email && String(u.email).toLowerCase().includes(q)) || (u.name && String(u.name).toLowerCase().includes(q)));
+    
     if (list.length === 0) {
-        usersTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-500">Nenhum usuário encontrado.</td></tr>`;
+        usersTableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-8 text-gray-500">
+                    <i class="fas fa-search mr-2"></i>Nenhum usuário encontrado.
+                </td>
+            </tr>`;
         return;
     }
+    
     list.forEach(user => {
-        const isActive = !!(user.isActive || user.online);
-        const statusHtml = `<span class="status-pill ${isActive ? 'online' : 'offline'}">${isActive ? 'Online' : 'Offline'}</span>`;
-        const expirationDate = user.subscription_expires_at ? new Date(user.subscription_expires_at).toLocaleDateString('pt-BR') : 'N/A';
+        // Determinar o tipo de usuário
+        const userType = user.role === 'admin' ? 'admin' : 'user';
+        const userTypeBadge = userType === 'admin' 
+            ? `<span class="user-badge admin"><i class="fas fa-shield-alt mr-1"></i>Admin</span>`
+            : `<span class="user-badge user"><i class="fas fa-user mr-1"></i>Usuário</span>`;
+
+        // Status da assinatura
+        const isPremium = user.is_pay;
+        const subscriptionBadge = isPremium 
+            ? `<span class="user-badge premium"><i class="fas fa-crown mr-1"></i>Premium</span>`
+            : `<span class="user-badge free"><i class="fas fa-user-clock mr-1"></i>Gratuito</span>`;
+
+        // Data de expiração
+        const expirationDate = user.subscription_expires_at 
+            ? new Date(user.subscription_expires_at).toLocaleDateString('pt-BR')
+            : '';
+
+        // Último quiz
+        const lastQuiz = user.last_quiz_date 
+            ? new Date(user.last_quiz_date).toLocaleDateString('pt-BR')
+            : 'Nunca';
+
+        // Nome ou username
+        const displayName = user.name || user.username || 'Sem nome';
+        const displayEmail = user.email || 'Não informado';
+
         const isPayChecked = user.is_pay ? 'checked' : '';
 
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${user.id}</td>
-            <td class="no-break">${user.username}</td>
-            <td class="no-break">${user.email || 'N/A'}</td>
-            <td>${statusHtml}</td>
+            <td class="font-mono text-sm font-bold text-blue-600">#${user.id}</td>
             <td>
-                <input type="checkbox" class="pay-toggle" data-user-id="${user.id}" ${isPayChecked}>
-                <input type="date" class="expiry-date" data-user-id="${user.id}" value="${user.subscription_expires_at ? user.subscription_expires_at.split('T')[0] : ''}">
+                <div class="flex flex-col">
+                    <span class="font-semibold text-gray-900">${displayName}</span>
+                    <span class="text-xs text-gray-500">@${user.username}</span>
+                </div>
             </td>
-            <td><button class="btn-delete" onclick="deleteUser(${user.id})">Apagar</button></td>
+            <td>
+                <div class="flex items-center">
+                    <i class="fas fa-envelope text-gray-400 mr-2"></i>
+                    <span class="text-sm">${displayEmail}</span>
+                </div>
+            </td>
+            <td>${userTypeBadge}</td>
+            <td>
+                <div class="flex flex-col gap-2">
+                    ${subscriptionBadge}
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" class="pay-toggle rounded" data-user-id="${user.id}" ${isPayChecked}>
+                        <input type="date" class="expiry-date text-xs border rounded px-2 py-1" data-user-id="${user.id}" value="${user.subscription_expires_at ? user.subscription_expires_at.split('T')[0] : ''}" title="Data de expiração">
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="flex items-center text-sm">
+                    <i class="fas fa-calendar-alt text-gray-400 mr-2"></i>
+                    <span>${lastQuiz}</span>
+                </div>
+            </td>
+            <td>
+                <button class="btn-delete hover:scale-105 transition-transform" onclick="deleteUser(${user.id})" title="Excluir usuário">
+                    <i class="fas fa-trash mr-1"></i>Excluir
+                </button>
+            </td>
         `;
         usersTableBody.appendChild(row);
     });

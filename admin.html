@@ -33,12 +33,83 @@
     .btn-small { background:transparent;border:1px solid rgba(0,0,0,0.06);padding:6px 8px;border-radius:8px;font-weight:700 }
 
   /* Categories / Users table scroll area */
-  .scroll-table { width:100%; background:#fff; border:1px solid #e6edf8; border-radius:12px; overflow:auto; max-height:420px; position:relative; box-shadow:0 6px 18px rgba(2,6,23,0.04) }
-    .scroll-table table { width:100%; border-collapse:collapse; font-size:14px }
-    .scroll-table thead th { position:sticky; top:0; background:linear-gradient(90deg,#f8fafc,#ffffff); padding:12px 16px; text-align:left; border-bottom:1px solid #eef2f7 }
-    .scroll-table tbody tr { border-bottom:1px solid #f1f5f9 }
-    .cat-name { font-weight:600; padding:12px 16px }
-    .cat-sub { padding-left:28px; color:#4b5563 }
+  .scroll-table { 
+    width:100%; 
+    background:#fff; 
+    border:1px solid #e6edf8; 
+    border-radius:16px; 
+    overflow:auto; 
+    max-height:500px; 
+    position:relative; 
+    box-shadow:0 8px 25px rgba(2,6,23,0.08);
+    margin-bottom: 20px;
+  }
+  .scroll-table table { 
+    width:100%; 
+    border-collapse:collapse; 
+    font-size:14px;
+    min-width: 800px; /* Garante largura mínima */
+  }
+  .scroll-table thead th { 
+    position:sticky; 
+    top:0; 
+    background:linear-gradient(135deg, #2563eb, #3b82f6); 
+    padding:16px 12px; 
+    text-align:left; 
+    border-bottom:2px solid #1d4ed8;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    white-space: nowrap;
+  }
+  .scroll-table tbody tr { 
+    border-bottom:1px solid #f1f5f9;
+    transition: all 0.2s ease;
+  }
+  .scroll-table tbody tr:hover { 
+    background-color: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .scroll-table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+    border-right: 1px solid #f1f5f9;
+  }
+  .scroll-table tbody td:last-child {
+    border-right: none;
+  }
+  
+  /* User status badges */
+  .user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .user-badge.admin {
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+    color: white;
+  }
+  .user-badge.user {
+    background: linear-gradient(90deg, #059669, #10b981);
+    color: white;
+  }
+  .user-badge.premium {
+    background: linear-gradient(90deg, #d97706, #f59e0b);
+    color: white;
+  }
+  .user-badge.free {
+    background: #e5e7eb;
+    color: #374151;
+  }
+
+  .cat-name { font-weight:600; padding:12px 16px }
+  .cat-sub { padding-left:28px; color:#4b5563 }
 
     /* Scrollbar for tables */
     tbody::-webkit-scrollbar {
@@ -178,19 +249,36 @@
         </div>
         <div class="scroll-table">
           <table class="min-w-full table-auto border-collapse text-left text-gray-800">
-            <thead class="bg-blue-600 text-white select-none">
+            <thead class="bg-gradient-to-r from-blue-600 to-blue-700 text-white select-none">
               <tr>
-                <th class="px-5 py-3 font-semibold">ID</th>
-                <th class="px-5 py-3 font-semibold">Usuário</th>
-                <th class="px-5 py-3 font-semibold">Detalhes</th>
-                <th class="px-5 py-3 font-semibold">Tipo</th>
-                <th class="px-5 py-3 font-semibold">Reportado Por</th>
-                <th class="px-5 py-3 font-semibold">Ação</th>
+                <th class="px-4 py-4 font-bold text-sm uppercase tracking-wider border-r border-blue-500/20">
+                  <i class="fas fa-hashtag mr-2"></i>ID
+                </th>
+                <th class="px-4 py-4 font-bold text-sm uppercase tracking-wider border-r border-blue-500/20">
+                  <i class="fas fa-user mr-2"></i>Nome/Username
+                </th>
+                <th class="px-4 py-4 font-bold text-sm uppercase tracking-wider border-r border-blue-500/20">
+                  <i class="fas fa-envelope mr-2"></i>Email
+                </th>
+                <th class="px-4 py-4 font-bold text-sm uppercase tracking-wider border-r border-blue-500/20">
+                  <i class="fas fa-shield-alt mr-2"></i>Tipo
+                </th>
+                <th class="px-4 py-4 font-bold text-sm uppercase tracking-wider border-r border-blue-500/20">
+                  <i class="fas fa-crown mr-2"></i>Assinatura
+                </th>
+                <th class="px-4 py-4 font-bold text-sm uppercase tracking-wider border-r border-blue-500/20">
+                  <i class="fas fa-calendar mr-2"></i>Último Quiz
+                </th>
+                <th class="px-4 py-4 font-bold text-sm uppercase tracking-wider">
+                  <i class="fas fa-cogs mr-2"></i>Ações
+                </th>
               </tr>
             </thead>
-            <tbody id="users-table-body" class="bg-white">
+            <tbody id="users-table-body" class="bg-white divide-y divide-gray-100">
                 <tr>
-                  <td colspan="5" class="text-center py-6 text-gray-500">Carregando usuários...</td>
+                  <td colspan="7" class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>Carregando usuários...
+                  </td>
                 </tr>
             </tbody>
           </table>
