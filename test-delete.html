@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete</title>
+</head>
+<body>
+    <h1>Test Delete Question</h1>
+    <button onclick="testDelete()">Test Delete Question ID 1</button>
+    
+    <script>
+        async function testDelete() {
+            const token = localStorage.getItem('token');
+            console.log('Token:', token ? 'presente' : 'ausente');
+            
+            try {
+                const response = await fetch('http://localhost:3000/admin/questions/1', {
+                    method: 'DELETE',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('Success:', result);
+                    alert('Success: ' + JSON.stringify(result));
+                } else {
+                    const error = await response.json();
+                    console.log('Error:', error);
+                    alert('Error: ' + JSON.stringify(error));
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Fetch error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

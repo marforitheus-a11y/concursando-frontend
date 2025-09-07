@@ -39,6 +39,11 @@ let categoriesCache = [];
 let usersCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Debug inicial
+    console.log('API_URL:', API_URL);
+    console.log('Token:', token ? 'presente' : 'ausente');
+    console.log('Username:', username);
+    
     // --- SELETORES DE ELEMENTOS ---
     const themeForm = document.getElementById('theme-form');
     const userForm = document.getElementById('user-form');
@@ -1933,27 +1938,64 @@ async function editQuestion(questionId) {
 }
 
 async function deleteQuestion(questionId) {
+    console.log('deleteQuestion chamada com ID:', questionId);
+    
     const question = questionsData.questions[questionId];
-    if (!question) return;
+    if (!question) {
+        console.log('Questão não encontrada no cache:', questionId);
+        alert('Questão não encontrada');
+        return;
+    }
     
     if (!confirm('Tem certeza que deseja excluir esta questão? Esta ação não pode ser desfeita.')) return;
     
     try {
+        console.log('Tentando excluir questão:', questionId);
+        console.log('URL:', `${API_URL}/admin/questions/${questionId}`);
+        console.log('Token:', token ? 'presente' : 'ausente');
+        console.log('API_URL value:', API_URL);
+        
         const response = await fetch(`${API_URL}/admin/questions/${questionId}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
         
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        console.log('Response headers:', response.headers);
+        
         if (response.ok) {
+            const result = await response.json();
+            console.log('Questão excluída com sucesso:', result);
             await loadQuestionsData();
             alert('Questão excluída com sucesso!');
         } else {
-            const error = await response.json();
-            alert('Erro ao excluir questão: ' + (error.message || 'Erro desconhecido'));
+            let errorMessage = 'Erro desconhecido';
+            try {
+                const error = await response.json();
+                errorMessage = error.message || `Erro ${response.status}`;
+                console.log('Erro do servidor:', error);
+            } catch (e) {
+                errorMessage = `Erro ${response.status}: ${response.statusText}`;
+                console.log('Erro ao parsear resposta:', e);
+            }
+            console.error('Erro na resposta:', errorMessage);
+            alert('Erro ao excluir questão: ' + errorMessage);
         }
     } catch (error) {
         console.error('Erro ao excluir questão:', error);
-        alert('Erro ao excluir questão');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            alert('Erro de conexão. Verifique se o servidor está funcionando.');
+        } else {
+            alert('Erro ao excluir questão: ' + error.message);
+        }
     }
 }
 
