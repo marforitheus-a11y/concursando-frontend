@@ -2621,3 +2621,285 @@ function renderReportedQuestionsTable(reportedQuestions) {
         `;
     }).join('');
 }
+
+// === EXPORT FUNCTIONS ===
+
+function toggleExportMenu() {
+    const menu = document.getElementById('export-menu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
+
+// Fechar menu de export quando clicar fora
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('export-menu');
+    const button = event.target.closest('button[onclick="toggleExportMenu()"]');
+    
+    if (!button && menu && !menu.contains(event.target)) {
+        menu.classList.add('hidden');
+    }
+});
+
+async function exportMetrics(format) {
+    try {
+        console.log(`[EXPORT] Exportando métricas em formato ${format}...`);
+        
+        // Fechar menu
+        const menu = document.getElementById('export-menu');
+        if (menu) menu.classList.add('hidden');
+        
+        // Mostrar loading
+        const loadingToast = showToast('info', 'Preparando exportação...', 3000);
+        
+        // Buscar dados atualizados
+        const response = await fetch(`${API_URL}/admin/dashboard/metrics`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+        
+        const metrics = await response.json();
+        
+        if (format === 'csv') {
+            exportToCSV(metrics);
+        } else if (format === 'excel') {
+            exportToExcel(metrics);
+        } else if (format === 'pdf') {
+            exportToPDF(metrics);
+        }
+        
+        showToast('success', `Relatório ${format.toUpperCase()} exportado com sucesso!`);
+        
+    } catch (error) {
+        console.error('[EXPORT] Erro na exportação:', error);
+        showToast('error', `Erro ao exportar: ${error.message}`);
+    }
+}
+
+function exportToCSV(metrics) {
+    const csvData = [];
+    
+    // Cabeçalho geral
+    csvData.push(['RELATÓRIO DE MÉTRICAS DO SISTEMA']);
+    csvData.push(['Data de Geração', new Date().toLocaleString('pt-BR')]);
+    csvData.push([]);
+    
+    // Métricas gerais
+    csvData.push(['MÉTRICAS GERAIS']);
+    csvData.push(['Total de Usuários', metrics.overview.totalUsers]);
+    csvData.push(['Total de Questões', metrics.overview.totalQuestions]);
+    csvData.push(['Total de Categorias', metrics.overview.totalCategories]);
+    csvData.push(['Total de Reports', metrics.overview.totalReports]);
+    csvData.push(['Usuários Ativos (30 dias)', metrics.overview.activeUsers]);
+    csvData.push(['Taxa de Crescimento (%)', metrics.overview.userGrowthRate]);
+    csvData.push([]);
+    
+    // Performance
+    csvData.push(['PERFORMANCE']);
+    csvData.push(['Pontuação Média (%)', metrics.performance.avgScore]);
+    csvData.push(['Pontuação Máxima (%)', metrics.performance.maxScore]);
+    csvData.push(['Total de Sessões', metrics.performance.totalSessions]);
+    csvData.push([]);
+    
+    // Questões por dificuldade
+    csvData.push(['QUESTÕES POR DIFICULDADE']);
+    csvData.push(['Dificuldade', 'Quantidade']);
+    metrics.questionStats.byDifficulty.forEach(item => {
+        csvData.push([item.difficulty, item.count]);
+    });
+    csvData.push([]);
+    
+    // Top categorias
+    csvData.push(['TOP CATEGORIAS']);
+    csvData.push(['Categoria', 'Quantidade de Questões']);
+    metrics.questionStats.byCategory.forEach(item => {
+        csvData.push([item.category, item.count]);
+    });
+    
+    // Converter para CSV
+    const csvContent = csvData.map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+    
+    // Download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `metricas_sistema_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+}
+
+function exportToExcel(metrics) {
+    // Para simplificar, vamos usar CSV com extensão .xls
+    const csvData = [];
+    
+    // Criar uma planilha estruturada
+    csvData.push(['DASHBOARD DE MÉTRICAS']);
+    csvData.push(['Gerado em', new Date().toLocaleString('pt-BR')]);
+    csvData.push([]);
+    
+    // Aba de métricas gerais
+    csvData.push(['=== VISÃO GERAL ===']);
+    csvData.push(['Métrica', 'Valor']);
+    csvData.push(['Total de Usuários', metrics.overview.totalUsers]);
+    csvData.push(['Total de Questões', metrics.overview.totalQuestions]);
+    csvData.push(['Total de Categorias', metrics.overview.totalCategories]);
+    csvData.push(['Total de Reports', metrics.overview.totalReports]);
+    csvData.push(['Usuários Ativos', metrics.overview.activeUsers]);
+    csvData.push(['Taxa de Crescimento', `${metrics.overview.userGrowthRate}%`]);
+    csvData.push([]);
+    
+    csvData.push(['=== PERFORMANCE ===']);
+    csvData.push(['Métrica', 'Valor']);
+    csvData.push(['Pontuação Média', `${metrics.performance.avgScore}%`]);
+    csvData.push(['Pontuação Máxima', `${metrics.performance.maxScore}%`]);
+    csvData.push(['Total de Sessões', metrics.performance.totalSessions]);
+    csvData.push([]);
+    
+    csvData.push(['=== TOP USUÁRIOS ===']);
+    csvData.push(['Usuário', 'Email', 'Quizzes', 'Última Atividade']);
+    metrics.activity.topUsers.forEach(user => {
+        csvData.push([
+            user.username,
+            user.email,
+            user.quizCount,
+            user.lastActivity ? new Date(user.lastActivity).toLocaleDateString('pt-BR') : 'Nunca'
+        ]);
+    });
+    
+    const csvContent = csvData.map(row => 
+        row.map(cell => `"${cell}"`).join('\t')
+    ).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `dashboard_metricas_${new Date().toISOString().split('T')[0]}.xls`;
+    link.click();
+}
+
+function exportToPDF(metrics) {
+    // Criar um relatório HTML para PDF
+    const reportContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Relatório de Métricas</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                .section { margin: 20px 0; }
+                .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                .metric-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+                table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f5f5f5; }
+                .chart { height: 200px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>Relatório de Métricas do Sistema</h1>
+                <p>Gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+            </div>
+            
+            <div class="section">
+                <h2>Visão Geral</h2>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <h3>Usuários</h3>
+                        <p>Total: ${metrics.overview.totalUsers.toLocaleString()}</p>
+                        <p>Ativos: ${metrics.overview.activeUsers.toLocaleString()}</p>
+                        <p>Crescimento: ${metrics.overview.userGrowthRate}%</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Conteúdo</h3>
+                        <p>Questões: ${metrics.overview.totalQuestions.toLocaleString()}</p>
+                        <p>Categorias: ${metrics.overview.totalCategories.toLocaleString()}</p>
+                        <p>Reports: ${metrics.overview.totalReports.toLocaleString()}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Performance</h2>
+                <table>
+                    <tr><th>Métrica</th><th>Valor</th></tr>
+                    <tr><td>Pontuação Média</td><td>${metrics.performance.avgScore}%</td></tr>
+                    <tr><td>Pontuação Máxima</td><td>${metrics.performance.maxScore}%</td></tr>
+                    <tr><td>Total de Sessões</td><td>${metrics.performance.totalSessions.toLocaleString()}</td></tr>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>Top Usuários Mais Ativos</h2>
+                <table>
+                    <tr><th>Usuário</th><th>Email</th><th>Quizzes</th><th>Última Atividade</th></tr>
+                    ${metrics.activity.topUsers.map(user => `
+                        <tr>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.quizCount}</td>
+                            <td>${user.lastActivity ? new Date(user.lastActivity).toLocaleDateString('pt-BR') : 'Nunca'}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>Questões por Categoria</h2>
+                <table>
+                    <tr><th>Categoria</th><th>Quantidade</th></tr>
+                    ${metrics.questionStats.byCategory.map(cat => `
+                        <tr><td>${cat.category}</td><td>${cat.count}</td></tr>
+                    `).join('')}
+                </table>
+            </div>
+        </body>
+        </html>
+    `;
+    
+    // Abrir em nova janela para impressão/PDF
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(reportContent);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+}
+
+function showToast(type, message, duration = 5000) {
+    const toast = document.createElement('div');
+    const bgColor = {
+        'success': 'bg-green-500',
+        'error': 'bg-red-500',
+        'warning': 'bg-yellow-500',
+        'info': 'bg-blue-500'
+    }[type] || 'bg-gray-500';
+    
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-transform duration-300`;
+    toast.textContent = message;
+    toast.style.transform = 'translateX(100%)';
+    
+    document.body.appendChild(toast);
+    
+    // Animar entrada
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remover após duração
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, duration);
+    
+    return toast;
+}
