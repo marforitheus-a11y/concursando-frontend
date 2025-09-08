@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Consentimentos - Quiz Concursos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .consent-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: var(--space-2xl);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-2xl);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .consent-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-xl);
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .consent-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: var(--space-md);
+    }
+
+    .consent-subtitle {
+      color: var(--gray-600);
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .consent-section {
+      background: white;
+      border-radius: var(--radius-xl);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+    }
+
+    .consent-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-lg);
+      padding: var(--space-lg);
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      transition: all 0.3s ease;
+    }
+
+    .consent-item:hover {
+      background: rgba(79, 70, 229, 0.05);
+    }
+
+    .consent-info {
+      flex: 1;
+    }
+
+    .consent-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: var(--space-sm);
+    }
+
+    .consent-description {
+      color: var(--gray-600);
+      line-height: 1.6;
+      margin-bottom: var(--space-sm);
+    }
+
+    .consent-details {
+      font-size: 0.9rem;
+      color: var(--gray-500);
+    }
+
+    .consent-toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 32px;
+      background: var(--gray-300);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch.active {
+      background: var(--success);
+    }
+
+    .toggle-switch.required {
+      background: var(--gray-400);
+      cursor: not-allowed;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 28px;
+      height: 28px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(28px);
+    }
+
+    .toggle-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-600);
+    }
+
+    .required-badge {
+      background: var(--danger);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      margin-left: var(--space-sm);
+    }
+
+    .optional-badge {
+      background: var(--info);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      margin-left: var(--space-sm);
+    }
+
+    .save-section {
+      text-align: center;
+      padding-top: var(--space-xl);
+      border-top: 1px solid var(--gray-200);
+      margin-top: var(--space-xl);
+    }
+
+    .data-subject-rights {
+      background: rgba(79, 70, 229, 0.1);
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      margin-bottom: var(--space-xl);
+    }
+
+    .rights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-lg);
+      margin-top: var(--space-lg);
+    }
+
+    .right-item {
+      background: white;
+      padding: var(--space-lg);
+      border-radius: var(--radius-md);
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .right-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .right-icon {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-bottom: var(--space-md);
+    }
+
+    .right-title {
+      font-weight: 600;
+      color: var(--gray-800);
+      margin-bottom: var(--space-sm);
+    }
+
+    .right-description {
+      font-size: 0.9rem;
+      color: var(--gray-600);
+    }
+
+    .back-button {
+      position: fixed;
+      top: var(--space-xl);
+      left: var(--space-xl);
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    @media (max-width: 768px) {
+      .consent-container {
+        margin: var(--space-lg);
+        padding: var(--space-xl) var(--space-lg);
+      }
+
+      .consent-title {
+        font-size: 2rem;
+      }
+
+      .consent-item {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .back-button {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: var(--space-lg);
+      }
+
+      .rights-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="back-button" onclick="history.back()">
+      <i class="fas fa-arrow-left"></i>
+      Voltar
+    </button>
+
+    <div class="consent-container">
+      <div class="consent-header">
+        <h1 class="consent-title">Gerenciar Consentimentos</h1>
+        <p class="consent-subtitle">Controle como seus dados são utilizados</p>
+      </div>
+
+      <div class="data-subject-rights">
+        <h3><i class="fas fa-user-shield"></i> Seus Direitos sobre Dados Pessoais</h3>
+        <p>Conforme a LGPD, você tem direitos sobre seus dados pessoais. Abaixo estão as principais ações que você pode realizar:</p>
+        
+        <div class="rights-grid">
+          <div class="right-item">
+            <div class="right-icon"><i class="fas fa-download"></i></div>
+            <div class="right-title">Baixar Dados</div>
+            <div class="right-description">Baixe uma cópia de todos os seus dados</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon"><i class="fas fa-edit"></i></div>
+            <div class="right-title">Corrigir Dados</div>
+            <div class="right-description">Atualize informações incorretas</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon"><i class="fas fa-trash"></i></div>
+            <div class="right-title">Excluir Conta</div>
+            <div class="right-description">Remova permanentemente seus dados</div>
+          </div>
+          <div class="right-item">
+            <div class="right-icon"><i class="fas fa-question-circle"></i></div>
+            <div class="right-title">Solicitar Informações</div>
+            <div class="right-description">Saiba como seus dados são usados</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="consent-section">
+        <h2><i class="fas fa-cog"></i> Consentimentos de Tratamento de Dados</h2>
+        <p>Gerencie suas preferências sobre como utilizamos seus dados pessoais:</p>
+
+        <div class="consent-item">
+          <div class="consent-info">
+            <div class="consent-name">
+              Dados Essenciais para Funcionamento
+              <span class="required-badge">OBRIGATÓRIO</span>
+            </div>
+            <div class="consent-description">
+              Dados necessários para criação de conta, login e funcionamento básico da plataforma (nome, e-mail, nome de usuário).
+            </div>
+            <div class="consent-details">
+              <strong>Base Legal:</strong> Execução de contrato • <strong>Retenção:</strong> Enquanto a conta estiver ativa
+            </div>
+          </div>
+          <div class="consent-toggle">
+            <div class="toggle-switch active required" data-consent="essential">
+              <div class="toggle-slider"></div>
+            </div>
+            <span class="toggle-label">Sempre Ativo</span>
+          </div>
+        </div>
+
+        <div class="consent-item">
+          <div class="consent-info">
+            <div class="consent-name">
+              Análise de Desempenho
+              <span class="optional-badge">OPCIONAL</span>
+            </div>
+            <div class="consent-description">
+              Coleta e análise do seu desempenho em simulados para gerar relatórios personalizados e sugestões de melhoria.
+            </div>
+            <div class="consent-details">
+              <strong>Base Legal:</strong> Legítimo interesse • <strong>Retenção:</strong> 2 anos após último acesso
+            </div>
+          </div>
+          <div class="consent-toggle">
+            <div class="toggle-switch active" data-consent="performance">
+              <div class="toggle-slider"></div>
+            </div>
+            <span class="toggle-label">Ativo</span>
+          </div>
+        </div>
+
+        <div class="consent-item">
+          <div class="consent-info">
+            <div class="consent-name">
+              Cookies de Analytics
+              <span class="optional-badge">OPCIONAL</span>
+            </div>
+            <div class="consent-description">
+              Uso de Google Analytics para entender como você navega na plataforma e melhorar a experiência do usuário.
+            </div>
+            <div class="consent-details">
+              <strong>Base Legal:</strong> Consentimento • <strong>Retenção:</strong> 26 meses (Google Analytics)
+            </div>
+          </div>
+          <div class="consent-toggle">
+            <div class="toggle-switch" data-consent="analytics">
+              <div class="toggle-slider"></div>
+            </div>
+            <span class="toggle-label">Inativo</span>
+          </div>
+        </div>
+
+        <div class="consent-item">
+          <div class="consent-info">
+            <div class="consent-name">
+              Comunicações de Marketing
+              <span class="optional-badge">OPCIONAL</span>
+            </div>
+            <div class="consent-description">
+              Recebimento de e-mails sobre novos recursos, dicas de estudo, promoções e atualizações da plataforma.
+            </div>
+            <div class="consent-details">
+              <strong>Base Legal:</strong> Consentimento • <strong>Retenção:</strong> Até revogação do consentimento
+            </div>
+          </div>
+          <div class="consent-toggle">
+            <div class="toggle-switch" data-consent="marketing">
+              <div class="toggle-slider"></div>
+            </div>
+            <span class="toggle-label">Inativo</span>
+          </div>
+        </div>
+
+        <div class="consent-item">
+          <div class="consent-info">
+            <div class="consent-name">
+              Personalização de Conteúdo
+              <span class="optional-badge">OPCIONAL</span>
+            </div>
+            <div class="consent-description">
+              Uso do histórico de estudos para personalizar questões, sugerir temas de estudo e adaptar a dificuldade.
+            </div>
+            <div class="consent-details">
+              <strong>Base Legal:</strong> Legítimo interesse • <strong>Retenção:</strong> Enquanto a conta estiver ativa
+            </div>
+          </div>
+          <div class="consent-toggle">
+            <div class="toggle-switch active" data-consent="personalization">
+              <div class="toggle-slider"></div>
+            </div>
+            <span class="toggle-label">Ativo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="consent-section">
+        <h2><i class="fas fa-shield-alt"></i> Ações sobre seus Dados</h2>
+        <p>Execute ações relacionadas aos seus direitos sob a LGPD:</p>
+
+        <div class="rights-grid">
+          <button class="btn btn-primary" onclick="downloadUserData()">
+            <i class="fas fa-download"></i>
+            Baixar Meus Dados
+          </button>
+          <button class="btn btn-secondary" onclick="requestDataInfo()">
+            <i class="fas fa-info-circle"></i>
+            Solicitar Informações
+          </button>
+          <button class="btn btn-secondary" onclick="correctData()">
+            <i class="fas fa-edit"></i>
+            Corrigir Dados
+          </button>
+          <button class="btn btn-danger" onclick="deleteAccount()">
+            <i class="fas fa-trash"></i>
+            Excluir Conta
+          </button>
+        </div>
+      </div>
+
+      <div class="save-section">
+        <button class="btn btn-primary" onclick="saveConsents()">
+          <i class="fas fa-save"></i>
+          Salvar Preferências
+        </button>
+        <p style="margin-top: var(--space-md); color: var(--gray-500); font-size: 0.9rem;">
+          Suas preferências serão salvas e aplicadas imediatamente
+        </p>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--gray-200);">
+        <p style="color: var(--gray-500); font-size: 0.9rem;">
+          Para dúvidas sobre privacidade e dados, entre em contato: 
+          <a href="mailto:privacidade@quizconcursos.com.br" style="color: var(--primary); font-weight: 600;">
+            privacidade@quizconcursos.com.br
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Gerenciamento de consentimentos
+    const API_URL = 'https://quiz-api-z4ri.onrender.com';
+
+    // Estado dos consentimentos
+    let consents = {
+      essential: true,     // Sempre ativo
+      performance: true,   // Ativo por padrão
+      analytics: false,    // Inativo por padrão
+      marketing: false,    // Inativo por padrão
+      personalization: true // Ativo por padrão
+    };
+
+    // Inicializar página
+    document.addEventListener('DOMContentLoaded', function() {
+      loadUserConsents();
+      setupToggleListeners();
+    });
+
+    // Carregar consentimentos do usuário
+    async function loadUserConsents() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`${API_URL}/user/consents`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          consents = { ...consents, ...data.consents };
+          updateToggleStates();
+        }
+      } catch (error) {
+        console.error('Erro ao carregar consentimentos:', error);
+      }
+    }
+
+    // Configurar listeners dos toggles
+    function setupToggleListeners() {
+      document.querySelectorAll('.toggle-switch').forEach(toggle => {
+        if (!toggle.classList.contains('required')) {
+          toggle.addEventListener('click', function() {
+            const consentType = this.dataset.consent;
+            toggleConsent(consentType);
+          });
+        }
+      });
+    }
+
+    // Alternar consentimento
+    function toggleConsent(type) {
+      if (type !== 'essential') {
+        consents[type] = !consents[type];
+        updateToggleStates();
+      }
+    }
+
+    // Atualizar estados visuais dos toggles
+    function updateToggleStates() {
+      Object.keys(consents).forEach(type => {
+        const toggle = document.querySelector(`[data-consent="${type}"]`);
+        const label = toggle.parentElement.querySelector('.toggle-label');
+        
+        if (consents[type]) {
+          toggle.classList.add('active');
+          label.textContent = type === 'essential' ? 'Sempre Ativo' : 'Ativo';
+        } else {
+          toggle.classList.remove('active');
+          label.textContent = 'Inativo';
+        }
+      });
+    }
+
+    // Salvar consentimentos
+    async function saveConsents() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Você precisa estar logado para salvar as preferências.');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/user/consents`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ consents })
+        });
+
+        if (response.ok) {
+          showNotification('Preferências salvas com sucesso!', 'success');
+          
+          // Aplicar configurações de cookies/analytics
+          applyConsentSettings();
+        } else {
+          throw new Error('Erro ao salvar preferências');
+        }
+      } catch (error) {
+        console.error('Erro ao salvar consentimentos:', error);
+        showNotification('Erro ao salvar preferências. Tente novamente.', 'error');
+      }
+    }
+
+    // Aplicar configurações de consentimento
+    function applyConsentSettings() {
+      // Google Analytics
+      if (typeof gtag !== 'undefined') {
+        gtag('consent', 'update', {
+          'analytics_storage': consents.analytics ? 'granted' : 'denied'
+        });
+      }
+
+      // Cookies de personalização
+      if (!consents.personalization) {
+        // Limpar cookies de personalização
+        document.cookie = 'user_preferences=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      }
+    }
+
+    // Baixar dados do usuário
+    async function downloadUserData() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Você precisa estar logado para baixar seus dados.');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/user/export-data`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `meus-dados-quiz-concursos-${new Date().toISOString().split('T')[0]}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+          
+          showNotification('Download iniciado com sucesso!', 'success');
+        } else {
+          throw new Error('Erro ao gerar arquivo de dados');
+        }
+      } catch (error) {
+        console.error('Erro ao baixar dados:', error);
+        showNotification('Erro ao baixar dados. Tente novamente.', 'error');
+      }
+    }
+
+    // Solicitar informações sobre dados
+    function requestDataInfo() {
+      const subject = encodeURIComponent('Solicitação de Informações sobre Dados Pessoais - LGPD');
+      const body = encodeURIComponent(`Olá,
+
+Gostaria de solicitar informações sobre como meus dados pessoais são tratados pela Quiz Concursos, conforme meus direitos sob a LGPD.
+
+Especificamente, gostaria de saber:
+- Quais dados pessoais vocês possuem sobre mim
+- Como estes dados são utilizados
+- Com quem são compartilhados
+- Por quanto tempo são armazenados
+
+Aguardo retorno.
+
+Atenciosamente.`);
+      
+      window.open(`mailto:privacidade@quizconcursos.com.br?subject=${subject}&body=${body}`);
+    }
+
+    // Corrigir dados
+    function correctData() {
+      window.location.href = 'conta.html#editar-perfil';
+    }
+
+    // Excluir conta
+    function deleteAccount() {
+      if (confirm('⚠️ ATENÇÃO: Esta ação é irreversível!\n\nTem certeza que deseja excluir permanentemente sua conta e todos os seus dados?\n\nTodos os seus progressos, simulados e informações serão perdidos para sempre.')) {
+        if (confirm('🔒 Confirmação Final:\n\nEsta é sua última chance de cancelar. Clique em OK apenas se tiver ABSOLUTA CERTEZA de que deseja excluir sua conta.')) {
+          proceedWithAccountDeletion();
+        }
+      }
+    }
+
+    // Prosseguir com exclusão da conta
+    async function proceedWithAccountDeletion() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Você precisa estar logado para excluir a conta.');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/user/delete-account`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          alert('✅ Conta excluída com sucesso.\n\nTodos os seus dados foram removidos permanentemente de nossos sistemas.\n\nVocê será redirecionado para a página inicial.');
+          
+          // Limpar dados locais
+          localStorage.clear();
+          sessionStorage.clear();
+          
+          // Redirecionar para página inicial
+          window.location.href = 'index.html';
+        } else {
+          throw new Error('Erro ao excluir conta');
+        }
+      } catch (error) {
+        console.error('Erro ao excluir conta:', error);
+        showNotification('Erro ao excluir conta. Entre em contato com o suporte.', 'error');
+      }
+    }
+
+    // Mostrar notificação
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>
+        ${message}
+      `;
+      
+      // Estilo inline para garantir visibilidade
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        padding: 16px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideInFromRight 0.3s ease;
+        ${type === 'success' ? 'background: rgba(16, 185, 129, 0.9); color: white;' : 'background: rgba(239, 68, 68, 0.9); color: white;'}
+      `;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOutToRight 0.3s ease';
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+
+    // Animações CSS inline
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideInFromRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOutToRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+  <script src="lgpd-manager.js"></script>
+</body>
+</html>

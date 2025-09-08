@@ -3,115 +3,238 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concursando - Login</title>
+  <title>Quiz Concursos - Sistema Moderno de Simulados</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-  <!-- Login form style inspired by Uiverse (dull-walrus-66) - MIT License -->
+  <!-- Modern Login Design Styles -->
   <style>
-    :root {
-      --bg-1: #0e0f13;
-      --bg-2: #141821;
-      --card: #10131a;
-      --muted: #8a94a6;
-      --border: #232838;
-      --accent: #3b82f6;
-      --accent-2: #22d3ee;
-      --text: #e6edf8;
-      --danger: #ef4444;
-    }
     body.login-body {
       min-height: 100vh;
       margin: 0;
-      background: radial-gradient(1200px 600px at 10% 0%, rgba(34,211,238,0.12), transparent),
-                  radial-gradient(1200px 600px at 90% 100%, rgba(59,130,246,0.12), transparent),
-                  linear-gradient(180deg, var(--bg-1), var(--bg-2));
-      color: var(--text);
+      background: var(--gradient-bg);
+      color: var(--text-primary);
       display: grid;
       place-items: center;
-      font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: var(--font-body);
     }
+    
     .login-wrap {
       width: min(92vw, 420px);
       display: grid;
-      gap: 14px;
-      padding: 18px 12px 32px;
+      gap: var(--space-lg);
+      padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+      animation: fadeInUp 0.6s ease-out;
     }
+    
     .logo-box {
       display: grid;
       justify-items: center;
-      gap: 6px;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
     }
-    .logo-box img { height: 54px; width: auto; }
-    .logo-box .muted { color: var(--muted); font-size: 0.9rem; margin: 0; }
+    
+    .logo-box img { 
+      height: 60px; 
+      width: auto; 
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+    }
+    
+    .logo-box .muted { 
+      color: var(--gray-400); 
+      font-size: 0.9rem; 
+      margin: 0; 
+      font-weight: 500;
+    }
 
     .card {
-      background: linear-gradient(180deg, rgba(16,19,26,0.86), rgba(16,19,26,0.96));
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 18px;
-      box-shadow: 0 10px 40px rgba(2,6,23,0.45);
-      backdrop-filter: saturate(150%) blur(6px);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-2xl);
+      padding: var(--space-2xl);
+      box-shadow: var(--shadow-2xl);
+      border: 1px solid rgba(255,255,255,0.2);
+      position: relative;
+      overflow: hidden;
     }
-    .card h2 { margin: 0 0 6px; font-weight: 700; font-size: 1.25rem; }
-    .card p.sub { margin: 0 0 14px; color: var(--muted); font-size: 0.92rem; }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+    }
+    
+    .card h2 { 
+      margin: 0 0 var(--space-sm); 
+      font-weight: 700; 
+      font-size: 1.5rem; 
+      color: var(--gray-800);
+      text-align: center;
+    }
+    
+    .card p.sub { 
+      margin: 0 0 var(--space-lg); 
+      color: var(--gray-500); 
+      font-size: 0.95rem; 
+      text-align: center;
+      font-weight: 500;
+    }
 
-    .field { display: grid; gap: 6px; margin-bottom: 12px; }
+    .field { 
+      display: grid; 
+      gap: var(--space-sm); 
+      margin-bottom: var(--space-md); 
+    }
+    
+    .field label {
+      font-weight: 600;
+      color: var(--gray-700);
+      font-size: 0.95rem;
+    }
+    
     .control {
       position: relative;
       display: flex;
       align-items: center;
-      gap: 10px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #0c0f15;
-      padding: 12px 14px;
-      transition: border-color .18s ease;
+      gap: var(--space-md);
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      background: white;
+      padding: var(--space-md) var(--space-lg);
+      transition: all 0.3s ease;
     }
-    .control:focus-within { border-color: var(--accent); }
-    .control svg { color: #7b88a1; flex: 0 0 auto; }
+    
+    .control:focus-within { 
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .control svg, .control i { 
+      color: var(--gray-400); 
+      flex: 0 0 auto; 
+      font-size: 1.1rem;
+    }
+    
     .control input {
       flex: 1 1 auto;
       background: transparent;
       border: 0;
       outline: 0;
-      color: var(--text);
-      font-size: 0.95rem;
-      letter-spacing: 0.2px;
+      color: var(--gray-800);
+      font-size: 1rem;
+      font-weight: 500;
     }
+    
+    .control input::placeholder {
+      color: var(--gray-400);
+      font-weight: 400;
+    }
+    
     .hint {
-      display: flex; justify-content: space-between; align-items: center;
-      margin: 4px 2px 0; font-size: 0.85rem; color: var(--muted);
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      margin: var(--space-sm) 0 0; 
+      font-size: 0.9rem; 
+      color: var(--gray-500);
     }
-    .hint a { color: #93c5fd; text-decoration: none; }
-    .hint a:hover { text-decoration: underline; }
+    
+    .hint a { 
+      color: var(--primary); 
+      text-decoration: none; 
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    
+    .hint a:hover { 
+      color: var(--secondary);
+      text-decoration: underline; 
+    }
 
     .btn {
       width: 100%;
-      border: 0; border-radius: 12px;
-      padding: 12px 16px;
-      color: white; font-weight: 700; letter-spacing: .3px;
+      border: 0; 
+      border-radius: var(--radius-lg);
+      background: var(--gradient-primary);
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: var(--space-lg);
       cursor: pointer;
-      background: linear-gradient(90deg, var(--accent-2), var(--accent));
-      box-shadow: 0 10px 30px rgba(34,211,238,0.18), 0 6px 18px rgba(59,130,246,0.28);
-      transition: transform .08s ease, box-shadow .2s ease;
+      transition: all 0.3s ease;
+      margin-top: var(--space-lg);
+      box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
+      position: relative;
+      overflow: hidden;
     }
-    .btn:hover { transform: translateY(-1px); }
-    .btn:active { transform: translateY(0); }
-
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(79, 70, 229, 0.4);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .btn:hover::before {
+      left: 100%;
+    }
+    
     .btn.secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
+      background: white;
+      border: 2px solid var(--gray-200);
+      color: var(--gray-600);
       font-weight: 600;
-      box-shadow: none;
+      box-shadow: var(--shadow-sm);
     }
+    
     .btn.secondary:hover {
-      background: var(--border);
-      color: var(--text);
-      transform: translateY(-1px);
-      box-shadow: none;
+      background: var(--gray-50);
+      border-color: var(--gray-300);
+      color: var(--gray-800);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--danger);
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      margin-top: var(--space-md);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    @media (max-width: 480px) {
+      .login-wrap {
+        width: 95vw;
+        padding: var(--space-lg) var(--space-md) var(--space-xl);
+      }
+      
+      .card {
+        padding: var(--space-xl) var(--space-lg);
+      }
     }
 
     .divider {
@@ -208,44 +331,36 @@
         <p class="sub">Acesse sua conta para continuar</p>
         <form id="auth-form" autocomplete="on">
           <div class="field">
-            <label for="login-username" class="visually-hidden">Usuário ou e-mail</label>
+            <label for="login-username">Usuário ou E-mail</label>
             <div class="control">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/></svg>
-              <input type="text" id="login-username" placeholder="Usuário ou e-mail" required>
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input type="text" id="login-username" placeholder="Digite seu usuário ou e-mail" required>
             </div>
           </div>
           <div class="field">
-            <label for="login-password" class="visually-hidden">Senha</label>
+            <label for="login-password">Senha</label>
             <div class="control">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <input type="password" id="login-password" placeholder="Senha" required>
+              <i class="fas fa-lock" aria-hidden="true"></i>
+              <input type="password" id="login-password" placeholder="Digite sua senha" required>
             </div>
             <div class="hint">
               <span></span>
               <a href="#" class="forgot">Esqueceu a senha?</a>
             </div>
           </div>
-          <button type="submit" id="submit-btn" class="btn">Entrar</button>
-          <p id="error-message" aria-live="polite"></p>
+          <button type="submit" id="submit-btn" class="btn">
+            <i class="fas fa-sign-in-alt"></i>
+            Entrar
+          </button>
+          <div id="error-message" class="error-message" style="display: none;" aria-live="polite"></div>
         </form>
 
-        <div class="divider">Ou entre com</div>
-
-        <div class="social-logins">
-          <button class="social-btn" aria-label="Entrar com Google">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 381.5 512 244 512 109.8 512 0 402.2 0 261.8 0 120.5 109.8 8.6 244 8.6c77.7 0 142 30.4 187.2 73.4l-66.5 64.2c-25.5-24.3-61.5-38.9-120.7-38.9-96.9 0-175.8 78.8-175.8 176.2s78.9 176.2 175.8 176.2c100.9 0 149.9-74.4 155.3-114.2H244v-8h244z"/></svg>
-          </button>
-          <button class="social-btn" aria-label="Entrar com Facebook">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.8 89.4 226.4 209.2 245V327.7h-63V256h63v-54.6c0-62.2 37-96.5 93.7-96.5 27.1 0 55.5 4.8 55.5 4.8v61h-31.3c-30.8 0-40.4 19.1-40.4 38.7V256h68.8l-11 71.7h-57.8V501C414.6 482.4 504 379.8 504 256z"/></svg>
-          </button>
-          <button class="social-btn" aria-label="Entrar com Twitter">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
-          </button>
-        </div>
-
-        <div style="display: grid; gap: 10px; margin-top: 20px;">
+        <div style="display: grid; gap: var(--space-md); margin-top: var(--space-xl);">
             <p class="sub" style="text-align: center; margin: 0;">Não tem uma conta?</p>
-            <button id="show-signup" class="btn secondary">Cadastre-se</button>
+            <button id="show-signup" class="btn secondary">
+              <i class="fas fa-user-plus"></i>
+              Cadastre-se
+            </button>
         </div>
       </div>
 
@@ -254,35 +369,122 @@
         <p class="sub">Preencha os campos para se cadastrar</p>
         <form id="signup-form" autocomplete="on">
           <div class="field">
-            <label for="signup-name" class="visually-hidden">Nome Completo</label>
+            <label for="signup-name">Nome Completo</label>
             <div class="control">
-              <input type="text" id="signup-name" placeholder="Nome Completo" required>
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <input type="text" id="signup-name" placeholder="Digite seu nome completo" required>
             </div>
           </div>
           <div class="field">
-            <label for="signup-email" class="visually-hidden">E-mail</label>
+            <label for="signup-email">E-mail</label>
             <div class="control">
-              <input type="email" id="signup-email" placeholder="E-mail" required>
+              <i class="fas fa-envelope" aria-hidden="true"></i>
+              <input type="email" id="signup-email" placeholder="Digite seu e-mail" required>
             </div>
           </div>
           <div class="field">
-            <label for="signup-username" class="visually-hidden">Usuário</label>
+            <label for="signup-username">Nome de Usuário</label>
             <div class="control">
-              <input type="text" id="signup-username" placeholder="Nome de usuário" required>
+              <i class="fas fa-at" aria-hidden="true"></i>
+              <input type="text" id="signup-username" placeholder="Escolha um nome de usuário" required>
             </div>
           </div>
           <div class="field">
-            <label for="signup-password" class="visually-hidden">Senha</label>
+            <label for="signup-password">Senha</label>
             <div class="control">
-              <input type="password" id="signup-password" placeholder="Senha" required>
+              <i class="fas fa-lock" aria-hidden="true"></i>
+              <input type="password" id="signup-password" placeholder="Crie uma senha segura" required>
             </div>
           </div>
-          <button type="submit" id="signup-btn" class="btn">Criar Conta</button>
-          <p id="signup-error-message" class="error" aria-live="polite"></p>
+          
+          <!-- Seção de Consentimentos LGPD -->
+          <div class="field" style="margin-top: var(--space-xl);">
+            <h3 style="color: var(--gray-700); font-size: 1.1rem; margin-bottom: var(--space-md); text-align: center;">
+              <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
+              Consentimentos e Privacidade
+            </h3>
+            
+            <div style="background: rgba(79, 70, 229, 0.05); padding: var(--space-lg); border-radius: var(--radius-lg); border: 1px solid rgba(79, 70, 229, 0.1); margin-bottom: var(--space-lg);">
+              
+              <!-- Termos Obrigatórios -->
+              <div style="margin-bottom: var(--space-md);">
+                <label style="display: flex; align-items: flex-start; gap: var(--space-md); cursor: pointer;">
+                  <input type="checkbox" id="accept-terms" required style="margin-top: 4px; transform: scale(1.2);">
+                  <span style="font-size: 0.95rem; line-height: 1.5; color: var(--gray-700);">
+                    Li e aceito os <a href="termos-de-uso.html" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Termos de Uso</a> e a 
+                    <a href="politica-privacidade.html" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Política de Privacidade</a>
+                    <span style="color: var(--danger); font-weight: 600;">*</span>
+                  </span>
+                </label>
+              </div>
+              
+              <!-- Consentimento para dados essenciais -->
+              <div style="margin-bottom: var(--space-md);">
+                <label style="display: flex; align-items: flex-start; gap: var(--space-md); cursor: pointer;">
+                  <input type="checkbox" id="consent-essential" required style="margin-top: 4px; transform: scale(1.2);">
+                  <span style="font-size: 0.95rem; line-height: 1.5; color: var(--gray-700);">
+                    Autorizo o tratamento dos meus dados pessoais (nome, e-mail, usuário) para funcionamento da plataforma
+                    <span style="color: var(--danger); font-weight: 600;">*</span>
+                  </span>
+                </label>
+              </div>
+              
+              <!-- Consentimentos Opcionais -->
+              <div style="border-top: 1px solid rgba(79, 70, 229, 0.2); padding-top: var(--space-md); margin-top: var(--space-md);">
+                <p style="font-size: 0.9rem; color: var(--gray-600); margin-bottom: var(--space-md); text-align: center;">
+                  <strong>Consentimentos Opcionais</strong> (você pode alterar depois)
+                </p>
+                
+                <div style="margin-bottom: var(--space-sm);">
+                  <label style="display: flex; align-items: flex-start; gap: var(--space-md); cursor: pointer;">
+                    <input type="checkbox" id="consent-performance" checked style="margin-top: 4px; transform: scale(1.1);">
+                    <span style="font-size: 0.9rem; line-height: 1.4; color: var(--gray-600);">
+                      Análise de desempenho em simulados para relatórios personalizados
+                    </span>
+                  </label>
+                </div>
+                
+                <div style="margin-bottom: var(--space-sm);">
+                  <label style="display: flex; align-items: flex-start; gap: var(--space-md); cursor: pointer;">
+                    <input type="checkbox" id="consent-personalization" checked style="margin-top: 4px; transform: scale(1.1);">
+                    <span style="font-size: 0.9rem; line-height: 1.4; color: var(--gray-600);">
+                      Personalização de conteúdo com base no meu histórico de estudos
+                    </span>
+                  </label>
+                </div>
+                
+                <div>
+                  <label style="display: flex; align-items: flex-start; gap: var(--space-md); cursor: pointer;">
+                    <input type="checkbox" id="consent-marketing" style="margin-top: 4px; transform: scale(1.1);">
+                    <span style="font-size: 0.9rem; line-height: 1.4; color: var(--gray-600);">
+                      Receber e-mails sobre novos recursos e dicas de estudo
+                    </span>
+                  </label>
+                </div>
+              </div>
+              
+              <div style="text-align: center; margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid rgba(79, 70, 229, 0.2);">
+                <p style="font-size: 0.85rem; color: var(--gray-500); margin: 0;">
+                  <i class="fas fa-info-circle"></i>
+                  Você pode gerenciar seus consentimentos a qualquer momento em 
+                  <a href="gerenciar-consentimentos.html" style="color: var(--primary); font-weight: 600;">Configurações de Privacidade</a>
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <button type="submit" id="signup-btn" class="btn">
+            <i class="fas fa-user-plus"></i>
+            Criar Conta
+          </button>
+          <div id="signup-error-message" class="error-message" style="display: none;" aria-live="polite"></div>
         </form>
-        <div style="display: grid; gap: 10px; margin-top: 20px;">
+        <div style="display: grid; gap: var(--space-md); margin-top: var(--space-xl);">
             <p class="sub" style="text-align: center; margin: 0;">Já tem uma conta?</p>
-            <button id="show-login" class="btn secondary">Entrar</button>
+            <button id="show-login" class="btn secondary">
+              <i class="fas fa-sign-in-alt"></i>
+              Entrar
+            </button>
         </div>
       </div>
     </section>
@@ -302,29 +504,43 @@
         const signupErrorMessage = document.getElementById('signup-error-message');
         const socialLoginButtons = document.querySelectorAll('.social-btn');
 
+        function showError(element, message) {
+          if (element) {
+            element.textContent = message;
+            element.style.display = 'block';
+          }
+        }
+
+        function hideError(element) {
+          if (element) {
+            element.style.display = 'none';
+          }
+        }
+
         document.getElementById('show-signup').addEventListener('click', (e) => {
           e.preventDefault();
           loginView.style.display = 'none';
           signupView.style.display = 'block';
+          hideError(errorMessage);
+          hideError(signupErrorMessage);
         });
 
         document.getElementById('show-login').addEventListener('click', (e) => {
           e.preventDefault();
           signupView.style.display = 'none';
           loginView.style.display = 'block';
-        });
-
-        socialLoginButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const provider = button.getAttribute('aria-label').split(' ')[2].toLowerCase();
-                window.location.href = `${API_URL}/auth/${provider}`;
-            });
+          hideError(errorMessage);
+          hideError(signupErrorMessage);
         });
 
         authForm.addEventListener('submit', async (e) => {
           e.preventDefault();
-          if (errorMessage) { errorMessage.className = 'pending'; errorMessage.textContent = 'Entrando...'; }
+          hideError(errorMessage);
+          
+          const submitBtn = document.getElementById('submit-btn');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+          submitBtn.disabled = true;
 
           const loginIdentifier = document.getElementById('login-username').value.trim();
           const password = document.getElementById('login-password').value;
@@ -360,36 +576,212 @@
 
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (signupErrorMessage) { signupErrorMessage.textContent = 'Criando conta...'; }
+            hideError(signupErrorMessage);
+            
+            const signupBtn = document.getElementById('signup-btn');
+            const originalText = signupBtn.innerHTML;
+            signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando conta...';
+            signupBtn.disabled = true;
 
             const name = document.getElementById('signup-name').value.trim();
             const email = document.getElementById('signup-email').value.trim();
             const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
 
+            // Validação de campos básicos
             if (!name || !email || !username || !password) {
-                if (signupErrorMessage) { signupErrorMessage.textContent = 'Todos os campos são obrigatórios.'; }
+                showError(signupErrorMessage, 'Todos os campos são obrigatórios.');
+                signupBtn.innerHTML = originalText;
+                signupBtn.disabled = false;
                 return;
             }
+
+            // Validação de consentimentos obrigatórios LGPD
+            const acceptTerms = document.getElementById('accept-terms').checked;
+            const consentEssential = document.getElementById('consent-essential').checked;
+
+            if (!acceptTerms) {
+                showError(signupErrorMessage, 'Você deve aceitar os Termos de Uso e Política de Privacidade para continuar.');
+                signupBtn.innerHTML = originalText;
+                signupBtn.disabled = false;
+                return;
+            }
+
+            if (!consentEssential) {
+                showError(signupErrorMessage, 'É necessário autorizar o tratamento de dados essenciais para funcionamento da plataforma.');
+                signupBtn.innerHTML = originalText;
+                signupBtn.disabled = false;
+                return;
+            }
+
+            // Coletar consentimentos opcionais
+            const consents = {
+                essential: true, // Sempre true se chegou até aqui
+                performance: document.getElementById('consent-performance').checked,
+                personalization: document.getElementById('consent-personalization').checked,
+                marketing: document.getElementById('consent-marketing').checked,
+                analytics: false, // Será definido depois no gerenciamento de consentimentos
+                termsAccepted: true,
+                termsAcceptedAt: new Date().toISOString(),
+                privacyPolicyAccepted: true,
+                privacyPolicyAcceptedAt: new Date().toISOString()
+            };
 
             try {
                 const resp = await fetch(`${API_URL}/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, username, password })
+                    body: JSON.stringify({ 
+                        name, 
+                        email, 
+                        username, 
+                        password,
+                        consents,
+                        gdprCompliance: {
+                            ipAddress: await getUserIP(),
+                            userAgent: navigator.userAgent,
+                            consentTimestamp: new Date().toISOString(),
+                            consentMethod: 'explicit_checkbox'
+                        }
+                    })
                 });
                 const data = await resp.json();
                 if (!resp.ok) throw new Error(data.message || `Erro ${resp.status}`);
                 
-                // Exibe mensagem de sucesso e troca para a tela de login
-                alert('Conta criada com sucesso! Faça o login para continuar.');
-                signupView.style.display = 'none';
-                loginView.style.display = 'block';
+                // Exibe mensagem de sucesso com informações LGPD
+                showSuccessModal(data);
 
             } catch (err) {
-                if (signupErrorMessage) { signupErrorMessage.textContent = err.message || 'Não foi possível criar a conta.'; }
+                showError(signupErrorMessage, err.message || 'Não foi possível criar a conta.');
+            } finally {
+                signupBtn.innerHTML = originalText;
+                signupBtn.disabled = false;
             }
         });
+
+        // Função para obter IP do usuário (para compliance LGPD)
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return 'unknown';
+            }
+        }
+
+        // Modal de sucesso com informações LGPD
+        function showSuccessModal(data) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(4px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                padding: 20px;
+            `;
+
+            modal.innerHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 16px;
+                    padding: 32px;
+                    max-width: 500px;
+                    width: 100%;
+                    text-align: center;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+                    animation: fadeInUp 0.3s ease;
+                ">
+                    <div style="color: var(--success); font-size: 3rem; margin-bottom: 16px;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2 style="color: var(--gray-800); margin-bottom: 16px;">Conta Criada com Sucesso!</h2>
+                    <p style="color: var(--gray-600); margin-bottom: 24px;">
+                        Sua conta foi criada seguindo todas as diretrizes da LGPD. 
+                        Seus consentimentos foram registrados e você pode alterá-los a qualquer momento.
+                    </p>
+                    <div style="background: rgba(79, 70, 229, 0.1); padding: 16px; border-radius: 8px; margin-bottom: 24px; text-align: left;">
+                        <h4 style="color: var(--primary); margin-bottom: 8px;">📋 Resumo dos seus consentimentos:</h4>
+                        <ul style="color: var(--gray-600); font-size: 0.9rem; margin: 0; padding-left: 20px;">
+                            <li>✅ Dados essenciais para funcionamento</li>
+                            <li>${document.getElementById('consent-performance').checked ? '✅' : '❌'} Análise de desempenho</li>
+                            <li>${document.getElementById('consent-personalization').checked ? '✅' : '❌'} Personalização de conteúdo</li>
+                            <li>${document.getElementById('consent-marketing').checked ? '✅' : '❌'} E-mails de marketing</li>
+                        </ul>
+                    </div>
+                    <p style="color: var(--gray-500); font-size: 0.9rem; margin-bottom: 24px;">
+                        <i class="fas fa-shield-alt"></i>
+                        Gerencie seus consentimentos em <strong>Configurações > Privacidade</strong>
+                    </p>
+                    <button onclick="closeModalAndLogin()" style="
+                        background: var(--gradient-primary);
+                        color: white;
+                        border: none;
+                        padding: 12px 32px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <i class="fas fa-sign-in-alt"></i> Fazer Login
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Função global para fechar modal
+            window.closeModalAndLogin = function() {
+                document.body.removeChild(modal);
+                signupView.style.display = 'none';
+                loginView.style.display = 'block';
+                signupForm.reset();
+                
+                // Pré-preencher o campo de login com o username criado
+                document.getElementById('login-username').value = username;
+                
+                showNotification('Agora faça login com sua nova conta!', 'info');
+            };
+        }
+
+        // Função para mostrar notificações
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10001;
+                padding: 16px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideInFromRight 0.3s ease;
+                ${type === 'success' ? 'background: rgba(16, 185, 129, 0.9); color: white;' : 
+                  type === 'error' ? 'background: rgba(239, 68, 68, 0.9); color: white;' : 
+                  'background: rgba(59, 130, 246, 0.9); color: white;'}
+            `;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutToRight 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 4000);
+        }
       });
     })();
   </script>
@@ -418,6 +810,7 @@
       initial.onerror = function(){ tryNext(0); };
       initial.src = imgEl.src;
     })();
-  </script>
+    </script>
+    <script src="lgpd-manager.js"></script>
 </body>
 </html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidade - Quiz Concursos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .legal-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--space-2xl);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-2xl);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .legal-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-xl);
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .legal-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: var(--space-md);
+    }
+
+    .legal-subtitle {
+      color: var(--gray-600);
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .legal-section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .legal-section h2 {
+      color: var(--gray-800);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: var(--space-md);
+      padding-left: var(--space-md);
+      border-left: 4px solid var(--success);
+    }
+
+    .legal-section h3 {
+      color: var(--gray-700);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: var(--space-lg) 0 var(--space-sm);
+    }
+
+    .legal-section p {
+      color: var(--gray-600);
+      line-height: 1.7;
+      margin-bottom: var(--space-md);
+      text-align: justify;
+    }
+
+    .legal-section ul {
+      color: var(--gray-600);
+      line-height: 1.7;
+      margin-left: var(--space-lg);
+      margin-bottom: var(--space-md);
+    }
+
+    .legal-section li {
+      margin-bottom: var(--space-sm);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--space-lg) 0;
+      background: white;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: var(--space-md);
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .data-table th {
+      background: var(--gray-50);
+      font-weight: 600;
+      color: var(--gray-700);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .lgpd-box {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+    }
+
+    .rights-box {
+      background: rgba(79, 70, 229, 0.1);
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+    }
+
+    .warning-box {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+    }
+
+    .contact-info {
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+    }
+
+    .back-button {
+      position: fixed;
+      top: var(--space-xl);
+      left: var(--space-xl);
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    @media (max-width: 768px) {
+      .legal-container {
+        margin: var(--space-lg);
+        padding: var(--space-xl) var(--space-lg);
+      }
+
+      .legal-title {
+        font-size: 2rem;
+      }
+
+      .back-button {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: var(--space-lg);
+      }
+
+      .data-table {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="back-button" onclick="history.back()">
+      <i class="fas fa-arrow-left"></i>
+      Voltar
+    </button>
+
+    <div class="legal-container">
+      <div class="legal-header">
+        <h1 class="legal-title">Política de Privacidade</h1>
+        <p class="legal-subtitle">Última atualização: 8 de setembro de 2025</p>
+      </div>
+
+      <div class="lgpd-box">
+        <h3><i class="fas fa-shield-alt"></i> Compromisso com a LGPD</h3>
+        <p>
+          <strong>Esta política está em total conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei 13.709/2018)</strong> e descreve como coletamos, usamos, armazenamos e protegemos seus dados pessoais.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>1. Controlador de Dados</h2>
+        <p>
+          A Quiz Concursos é o controlador dos seus dados pessoais, responsável pelas decisões sobre o tratamento dos seus dados.
+        </p>
+        <div class="contact-info">
+          <p><strong>Dados para Contato do Controlador:</strong></p>
+          <p>
+            <strong>Razão Social:</strong> Quiz Concursos Ltda.<br>
+            <strong>CNPJ:</strong> 00.000.000/0001-00<br>
+            <strong>Endereço:</strong> São Paulo, SP - Brasil<br>
+            <strong>E-mail:</strong> privacidade@quizconcursos.com.br<br>
+            <strong>DPO:</strong> dpo@quizconcursos.com.br
+          </p>
+        </div>
+      </div>
+
+      <div class="legal-section">
+        <h2>2. Dados Pessoais Coletados</h2>
+        <p>
+          Coletamos os seguintes tipos de dados pessoais:
+        </p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tipo de Dado</th>
+              <th>Finalidade</th>
+              <th>Base Legal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Dados de Identificação</strong><br>Nome, e-mail, nome de usuário</td>
+              <td>Criação e gerenciamento de conta</td>
+              <td>Execução de contrato</td>
+            </tr>
+            <tr>
+              <td><strong>Dados de Desempenho</strong><br>Respostas, pontuações, tempo de estudo</td>
+              <td>Análise de progresso e relatórios</td>
+              <td>Legítimo interesse</td>
+            </tr>
+            <tr>
+              <td><strong>Dados de Navegação</strong><br>IP, cookies, logs de acesso</td>
+              <td>Segurança e melhorias da plataforma</td>
+              <td>Legítimo interesse</td>
+            </tr>
+            <tr>
+              <td><strong>Dados de Comunicação</strong><br>Mensagens de suporte, feedback</td>
+              <td>Atendimento ao cliente</td>
+              <td>Execução de contrato</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="legal-section">
+        <h2>3. Como Coletamos seus Dados</h2>
+        <h3>3.1 Coleta Direta</h3>
+        <ul>
+          <li>Formulários de cadastro e login</li>
+          <li>Formulários de contato e suporte</li>
+          <li>Interações com a plataforma (simulados, exercícios)</li>
+          <li>Configurações de perfil</li>
+        </ul>
+
+        <h3>3.2 Coleta Automática</h3>
+        <ul>
+          <li>Cookies e tecnologias similares</li>
+          <li>Logs de servidor</li>
+          <li>Dados de analytics (Google Analytics)</li>
+          <li>Informações de dispositivo e navegador</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>4. Finalidades do Tratamento</h2>
+        <p>
+          Utilizamos seus dados pessoais para:
+        </p>
+        <ul>
+          <li><strong>Prestação do Serviço:</strong> Permitir acesso à plataforma e funcionalidades</li>
+          <li><strong>Personalização:</strong> Adaptar conteúdo ao seu perfil de estudo</li>
+          <li><strong>Análise de Desempenho:</strong> Gerar relatórios e estatísticas de progresso</li>
+          <li><strong>Comunicação:</strong> Enviar notificações, updates e suporte</li>
+          <li><strong>Segurança:</strong> Proteger contra fraudes e usos indevidos</li>
+          <li><strong>Melhoria:</strong> Aprimorar a plataforma e desenvolver novos recursos</li>
+          <li><strong>Compliance:</strong> Cumprir obrigações legais e regulatórias</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>5. Base Legal para o Tratamento</h2>
+        <p>
+          Tratamos seus dados com base nas seguintes bases legais da LGPD:
+        </p>
+        <ul>
+          <li><strong>Execução de Contrato (Art. 7º, V):</strong> Para prestação dos serviços contratados</li>
+          <li><strong>Legítimo Interesse (Art. 7º, IX):</strong> Para análises, segurança e melhorias</li>
+          <li><strong>Consentimento (Art. 7º, I):</strong> Para comunicações de marketing (quando aplicável)</li>
+          <li><strong>Cumprimento de Obrigação Legal (Art. 7º, II):</strong> Para atender requisitos legais</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>6. Compartilhamento de Dados</h2>
+        <p>
+          Seus dados podem ser compartilhados nas seguintes situações:
+        </p>
+        <h3>6.1 Fornecedores de Serviço</h3>
+        <ul>
+          <li><strong>Hospedagem:</strong> Render.com (servidores na nuvem)</li>
+          <li><strong>Analytics:</strong> Google Analytics (dados anonimizados)</li>
+          <li><strong>E-mail:</strong> Provedores de e-mail para comunicações</li>
+          <li><strong>Pagamentos:</strong> Processadores de pagamento (quando aplicável)</li>
+        </ul>
+
+        <h3>6.2 Situações Especiais</h3>
+        <ul>
+          <li>Cumprimento de ordens judiciais</li>
+          <li>Proteção de direitos legais</li>
+          <li>Investigação de fraudes ou violações de termos</li>
+        </ul>
+
+        <div class="warning-box">
+          <p><strong>Importante:</strong> Nunca vendemos seus dados pessoais para terceiros. Todos os compartilhamentos são feitos com base em contratos que garantem a proteção adequada dos seus dados.</p>
+        </div>
+      </div>
+
+      <div class="legal-section">
+        <h2>7. Transferência Internacional</h2>
+        <p>
+          Alguns de nossos fornecedores podem estar localizados fora do Brasil. Quando isso ocorre:
+        </p>
+        <ul>
+          <li>Garantimos nível adequado de proteção de dados</li>
+          <li>Utilizamos cláusulas contratuais padrão</li>
+          <li>Verificamos conformidade com padrões internacionais (GDPR, etc.)</li>
+          <li>Mantemos registros de todas as transferências</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>8. Retenção de Dados</h2>
+        <p>
+          Mantemos seus dados pelo tempo necessário para:
+        </p>
+        <ul>
+          <li><strong>Dados de Conta:</strong> Enquanto a conta estiver ativa + 5 anos após exclusão</li>
+          <li><strong>Dados de Desempenho:</strong> Enquanto úteis para análise + 2 anos</li>
+          <li><strong>Logs de Sistema:</strong> 12 meses para segurança</li>
+          <li><strong>Comunicações:</strong> 3 anos para registro de atendimento</li>
+        </ul>
+        <p>
+          Após os períodos de retenção, os dados são excluídos permanentemente ou anonimizados.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>9. Segurança dos Dados</h2>
+        <p>
+          Implementamos medidas técnicas e organizacionais para proteger seus dados:
+        </p>
+        <h3>9.1 Medidas Técnicas</h3>
+        <ul>
+          <li>Criptografia de dados em trânsito (HTTPS/TLS)</li>
+          <li>Criptografia de dados armazenados</li>
+          <li>Autenticação segura com tokens JWT</li>
+          <li>Firewalls e sistemas de monitoramento</li>
+          <li>Backups seguros e regulares</li>
+        </ul>
+
+        <h3>9.2 Medidas Organizacionais</h3>
+        <ul>
+          <li>Controle de acesso por função</li>
+          <li>Treinamento regular da equipe</li>
+          <li>Política de segurança da informação</li>
+          <li>Auditorias de segurança periódicas</li>
+          <li>Plano de resposta a incidentes</li>
+        </ul>
+      </div>
+
+      <div class="rights-box">
+        <h2><i class="fas fa-user-shield"></i> 10. Seus Direitos sob a LGPD</h2>
+        <p>
+          <strong>Você possui os seguintes direitos sobre seus dados pessoais:</strong>
+        </p>
+        <ul>
+          <li><strong>Confirmação e Acesso:</strong> Saber se tratamos seus dados e ter acesso a eles</li>
+          <li><strong>Correção:</strong> Corrigir dados incompletos, inexatos ou desatualizados</li>
+          <li><strong>Anonimização:</strong> Solicitar anonimização de dados desnecessários</li>
+          <li><strong>Bloqueio:</strong> Bloquear dados desnecessários ou tratados irregularmente</li>
+          <li><strong>Eliminação:</strong> Excluir dados tratados com seu consentimento</li>
+          <li><strong>Portabilidade:</strong> Receber seus dados em formato estruturado</li>
+          <li><strong>Informação:</strong> Saber com quem compartilhamos seus dados</li>
+          <li><strong>Revogação:</strong> Retirar consentimento a qualquer momento</li>
+          <li><strong>Revisão:</strong> Contestar decisões automatizadas</li>
+        </ul>
+
+        <h3>Como Exercer seus Direitos</h3>
+        <p>
+          Para exercer qualquer direito, entre em contato através de:
+        </p>
+        <ul>
+          <li><strong>E-mail:</strong> privacidade@quizconcursos.com.br</li>
+          <li><strong>Formulário:</strong> Seção "Meus Dados" em sua conta</li>
+          <li><strong>Telefone:</strong> (11) 99999-9999</li>
+        </ul>
+        <p>
+          <strong>Prazo de Resposta:</strong> Até 15 dias para respostas simples, prorrogáveis por mais 15 dias em casos complexos.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>11. Cookies e Tecnologias Similares</h2>
+        <p>
+          Utilizamos cookies e tecnologias similares para:
+        </p>
+        <ul>
+          <li><strong>Cookies Essenciais:</strong> Funcionamento básico da plataforma</li>
+          <li><strong>Cookies de Desempenho:</strong> Análise de uso e melhorias</li>
+          <li><strong>Cookies de Personalização:</strong> Lembrar preferências</li>
+          <li><strong>Cookies de Analytics:</strong> Google Analytics (anonimizado)</li>
+        </ul>
+        <p>
+          Você pode gerenciar suas preferências de cookies através das configurações do seu navegador.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>12. Menores de Idade</h2>
+        <p>
+          Nossa plataforma é destinada a usuários com 16 anos ou mais. Para menores entre 16 e 18 anos, exigimos:
+        </p>
+        <ul>
+          <li>Consentimento específico dos pais ou responsáveis</li>
+          <li>Verificação de identidade do responsável</li>
+          <li>Proteção adicional de dados sensíveis</li>
+        </ul>
+        <div class="warning-box">
+          <p><strong>Atenção:</strong> Não coletamos intencionalmente dados de menores de 16 anos. Se identificarmos tal coleta, os dados serão imediatamente excluídos.</p>
+        </div>
+      </div>
+
+      <div class="legal-section">
+        <h2>13. Alterações nesta Política</h2>
+        <p>
+          Esta política pode ser atualizada para refletir:
+        </p>
+        <ul>
+          <li>Mudanças na legislação</li>
+          <li>Novos recursos da plataforma</li>
+          <li>Melhorias em práticas de privacidade</li>
+          <li>Feedback dos usuários</li>
+        </ul>
+        <p>
+          <strong>Notificação de Mudanças:</strong> Usuários serão notificados sobre alterações significativas por e-mail e através da plataforma, com 30 dias de antecedência.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>14. Incidentes de Segurança</h2>
+        <p>
+          Em caso de incidente de segurança que possa afetar seus dados:
+        </p>
+        <ul>
+          <li>Notificaremos a ANPD em até 72 horas</li>
+          <li>Comunicaremos usuários afetados quando necessário</li>
+          <li>Implementaremos medidas corretivas imediatas</li>
+          <li>Forneceremos relatório detalhado do ocorrido</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>15. Reclamações e Autoridade Supervisora</h2>
+        <p>
+          Se não estivermos atendendo adequadamente suas solicitações, você pode:
+        </p>
+        <ul>
+          <li>Registrar reclamação conosco: privacidade@quizconcursos.com.br</li>
+          <li>Contatar a ANPD: https://www.gov.br/anpd</li>
+          <li>Buscar orientação do Procon</li>
+          <li>Procurar assessoria jurídica</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>16. Contato do Encarregado (DPO)</h2>
+        <div class="contact-info">
+          <p><strong>Encarregado de Proteção de Dados (DPO):</strong></p>
+          <p>
+            <i class="fas fa-user"></i> <strong>Nome:</strong> [Nome do DPO]<br>
+            <i class="fas fa-envelope"></i> <strong>E-mail:</strong> dpo@quizconcursos.com.br<br>
+            <i class="fas fa-phone"></i> <strong>Telefone:</strong> (11) 99999-9999<br>
+            <i class="fas fa-clock"></i> <strong>Horário:</strong> Segunda a sexta, 9h às 18h
+          </p>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--gray-200);">
+        <p style="color: var(--gray-500); font-size: 0.9rem;">
+          © 2025 Quiz Concursos. Todos os direitos reservados.<br>
+          Esta política está em conformidade com a LGPD (Lei 13.709/2018)
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Scroll suave para âncoras
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Efeito de fade-in ao carregar
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelector('.legal-container').style.animation = 'fadeInUp 0.6s ease-out';
+    });
+  </script>
+</body>
+</html>

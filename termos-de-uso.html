@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termos de Uso - Quiz Concursos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .legal-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--space-2xl);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow-2xl);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .legal-header {
+      text-align: center;
+      margin-bottom: var(--space-2xl);
+      padding-bottom: var(--space-xl);
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    .legal-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: var(--space-md);
+    }
+
+    .legal-subtitle {
+      color: var(--gray-600);
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .legal-section {
+      margin-bottom: var(--space-xl);
+    }
+
+    .legal-section h2 {
+      color: var(--gray-800);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: var(--space-md);
+      padding-left: var(--space-md);
+      border-left: 4px solid var(--primary);
+    }
+
+    .legal-section h3 {
+      color: var(--gray-700);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: var(--space-lg) 0 var(--space-sm);
+    }
+
+    .legal-section p {
+      color: var(--gray-600);
+      line-height: 1.7;
+      margin-bottom: var(--space-md);
+      text-align: justify;
+    }
+
+    .legal-section ul {
+      color: var(--gray-600);
+      line-height: 1.7;
+      margin-left: var(--space-lg);
+      margin-bottom: var(--space-md);
+    }
+
+    .legal-section li {
+      margin-bottom: var(--space-sm);
+    }
+
+    .highlight-box {
+      background: rgba(79, 70, 229, 0.1);
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+    }
+
+    .warning-box {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+    }
+
+    .contact-info {
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      margin: var(--space-lg) 0;
+    }
+
+    .back-button {
+      position: fixed;
+      top: var(--space-xl);
+      left: var(--space-xl);
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-lg);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-xl);
+    }
+
+    @media (max-width: 768px) {
+      .legal-container {
+        margin: var(--space-lg);
+        padding: var(--space-xl) var(--space-lg);
+      }
+
+      .legal-title {
+        font-size: 2rem;
+      }
+
+      .back-button {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: var(--space-lg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="back-button" onclick="history.back()">
+      <i class="fas fa-arrow-left"></i>
+      Voltar
+    </button>
+
+    <div class="legal-container">
+      <div class="legal-header">
+        <h1 class="legal-title">Termos de Uso</h1>
+        <p class="legal-subtitle">Última atualização: 8 de setembro de 2025</p>
+      </div>
+
+      <div class="legal-section">
+        <h2>1. Aceitação dos Termos</h2>
+        <p>
+          Ao acessar e utilizar a plataforma Quiz Concursos, você concorda integralmente com estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não deve utilizar nossos serviços.
+        </p>
+        <div class="highlight-box">
+          <p><strong>Importante:</strong> Estes termos constituem um acordo legal entre você e a Quiz Concursos. Leia-os cuidadosamente.</p>
+        </div>
+      </div>
+
+      <div class="legal-section">
+        <h2>2. Descrição do Serviço</h2>
+        <p>
+          A Quiz Concursos é uma plataforma educacional que oferece:
+        </p>
+        <ul>
+          <li>Simulados para concursos públicos</li>
+          <li>Questões organizadas por categorias e dificuldades</li>
+          <li>Sistema de acompanhamento de desempenho</li>
+          <li>Relatórios de progresso e estatísticas</li>
+          <li>Conteúdo gerado por inteligência artificial</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>3. Cadastro e Conta do Usuário</h2>
+        <h3>3.1 Requisitos para Cadastro</h3>
+        <p>
+          Para utilizar nossos serviços, você deve:
+        </p>
+        <ul>
+          <li>Ter pelo menos 16 anos de idade</li>
+          <li>Fornecer informações verdadeiras e atualizadas</li>
+          <li>Manter a confidencialidade de sua senha</li>
+          <li>Concordar com nossa Política de Privacidade</li>
+        </ul>
+
+        <h3>3.2 Responsabilidades do Usuário</h3>
+        <p>
+          Você é responsável por:
+        </p>
+        <ul>
+          <li>Manter suas informações de conta atualizadas</li>
+          <li>Notificar-nos sobre uso não autorizado de sua conta</li>
+          <li>Usar a plataforma de forma ética e legal</li>
+          <li>Não compartilhar sua conta com terceiros</li>
+        </ul>
+      </div>
+
+      <div class="legal-section">
+        <h2>4. Uso Aceitável</h2>
+        <h3>4.1 Condutas Permitidas</h3>
+        <p>
+          Você pode usar nossa plataforma para:
+        </p>
+        <ul>
+          <li>Estudar e se preparar para concursos</li>
+          <li>Realizar simulados e exercícios</li>
+          <li>Acompanhar seu progresso nos estudos</li>
+          <li>Interagir com o conteúdo de forma educacional</li>
+        </ul>
+
+        <h3>4.2 Condutas Proibidas</h3>
+        <div class="warning-box">
+          <p><strong>É expressamente proibido:</strong></p>
+          <ul>
+            <li>Copiar, distribuir ou comercializar o conteúdo da plataforma</li>
+            <li>Utilizar bots, scripts ou ferramentas automatizadas</li>
+            <li>Tentar acessar sistemas ou dados não autorizados</li>
+            <li>Interferir no funcionamento da plataforma</li>
+            <li>Violar direitos de propriedade intelectual</li>
+            <li>Compartilhar conteúdo inadequado ou ofensivo</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="legal-section">
+        <h2>5. Propriedade Intelectual</h2>
+        <p>
+          Todo o conteúdo da plataforma, incluindo questões, textos, imagens, logos, design e código, é protegido por direitos autorais e propriedade intelectual da Quiz Concursos.
+        </p>
+        <h3>5.1 Conteúdo Gerado por IA</h3>
+        <p>
+          Parte do conteúdo é gerado por inteligência artificial. Embora nos esforcemos para garantir a qualidade e precisão, recomendamos sempre consultar fontes oficiais para informações definitivas.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>6. Privacidade e Proteção de Dados</h2>
+        <p>
+          Respeitamos sua privacidade e seguimos rigorosamente a Lei Geral de Proteção de Dados (LGPD). Para informações detalhadas sobre como coletamos, usamos e protegemos seus dados, consulte nossa <a href="politica-privacidade.html" style="color: var(--primary); font-weight: 600;">Política de Privacidade</a>.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>7. Disponibilidade do Serviço</h2>
+        <p>
+          Embora nos esforcemos para manter a plataforma sempre disponível, não garantimos 100% de uptime. Podemos realizar manutenções programadas e atualizações que podem temporariamente interromper o serviço.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>8. Limitação de Responsabilidade</h2>
+        <p>
+          A Quiz Concursos não se responsabiliza por:
+        </p>
+        <ul>
+          <li>Resultados obtidos em concursos reais</li>
+          <li>Decisões tomadas com base no conteúdo da plataforma</li>
+          <li>Interrupções temporárias do serviço</li>
+          <li>Perda de dados devido a problemas técnicos</li>
+        </ul>
+        <div class="warning-box">
+          <p><strong>Aviso Importante:</strong> O conteúdo da plataforma é para fins educacionais. Sempre consulte fontes oficiais para informações definitivas sobre concursos.</p>
+        </div>
+      </div>
+
+      <div class="legal-section">
+        <h2>9. Encerramento de Conta</h2>
+        <h3>9.1 Encerramento pelo Usuário</h3>
+        <p>
+          Você pode encerrar sua conta a qualquer momento através das configurações da conta ou entrando em contato conosco.
+        </p>
+        <h3>9.2 Encerramento pela Plataforma</h3>
+        <p>
+          Reservamos o direito de suspender ou encerrar contas que violem estes termos de uso.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>10. Alterações nos Termos</h2>
+        <p>
+          Podemos atualizar estes termos periodicamente. Usuários serão notificados sobre mudanças significativas por e-mail ou através da plataforma.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>11. Lei Aplicável</h2>
+        <p>
+          Estes termos são regidos pelas leis brasileiras. Quaisquer disputas serão resolvidas nos tribunais competentes do Brasil.
+        </p>
+      </div>
+
+      <div class="legal-section">
+        <h2>12. Contato</h2>
+        <div class="contact-info">
+          <p><strong>Para dúvidas sobre estes termos, entre em contato:</strong></p>
+          <p>
+            <i class="fas fa-envelope"></i> <strong>E-mail:</strong> juridico@quizconcursos.com.br<br>
+            <i class="fas fa-phone"></i> <strong>Telefone:</strong> (11) 99999-9999<br>
+            <i class="fas fa-map-marker-alt"></i> <strong>Endereço:</strong> São Paulo, SP - Brasil
+          </p>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--gray-200);">
+        <p style="color: var(--gray-500); font-size: 0.9rem;">
+          © 2025 Quiz Concursos. Todos os direitos reservados.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Scroll suave para âncoras
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Efeito de fade-in ao carregar
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelector('.legal-container').style.animation = 'fadeInUp 0.6s ease-out';
+    });
+  </script>
+</body>
+</html>
