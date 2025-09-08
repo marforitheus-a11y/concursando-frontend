@@ -269,7 +269,15 @@
       <section aria-labelledby="dashboard-title">
         <h2 id="dashboard-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">
           <i class="fas fa-chart-line mr-2"></i>Dashboard de Métricas
+          <button onclick="loadDashboardMetrics()" class="ml-4 inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">
+            <i class="fas fa-sync-alt mr-1"></i>Atualizar
+          </button>
         </h2>
+        
+        <!-- Alertas e Notificações -->
+        <div id="dashboard-alerts" class="hidden mb-6 space-y-3">
+          <!-- Será preenchido dinamicamente -->
+        </div>
         
         <div id="dashboard-loading" class="text-center py-8">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -363,6 +371,27 @@
                   <span class="text-gray-600">Melhor Pontuação:</span>
                   <span id="metric-max-score" class="font-semibold">-</span>
                 </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Atividades Recentes -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-clock mr-2"></i>Atividades dos Últimos 7 Dias
+              </h3>
+              <div id="recent-activity-chart" class="space-y-2">
+                <!-- Será preenchido dinamicamente -->
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-bell mr-2"></i>Status do Sistema
+              </h3>
+              <div id="system-status" class="space-y-3">
+                <!-- Será preenchido dinamicamente -->
               </div>
             </div>
           </div>

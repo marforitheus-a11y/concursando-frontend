@@ -2305,6 +2305,15 @@ function renderDashboardMetrics(metrics) {
     document.getElementById('metric-total-sessions').textContent = metrics.performance.totalSessions.toLocaleString();
     document.getElementById('metric-max-score').textContent = `${metrics.performance.maxScore}%`;
     
+    // Renderizar alertas
+    renderDashboardAlerts(metrics);
+    
+    // Atividades recentes
+    renderRecentActivityChart(metrics.activity.sessionsPerDay);
+    
+    // Status do sistema
+    renderSystemStatus(metrics);
+    
     // Gráfico de dificuldade
     renderDifficultyChart(metrics.questionStats.byDifficulty);
     
@@ -2320,6 +2329,181 @@ function renderDashboardMetrics(metrics) {
     // Última atualização
     const lastUpdated = new Date(metrics.lastUpdated).toLocaleString('pt-BR');
     document.getElementById('last-updated').textContent = lastUpdated;
+}
+
+function renderDashboardAlerts(metrics) {
+    const alertsContainer = document.getElementById('dashboard-alerts');
+    if (!alertsContainer) return;
+    
+    const alerts = [];
+    
+    // Verifica se há muitos reports pendentes
+    const pendingReports = metrics.reports.byStatus.find(r => r.status === 'pending');
+    if (pendingReports && pendingReports.count > 5) {
+        alerts.push({
+            type: 'warning',
+            icon: 'fas fa-exclamation-triangle',
+            title: 'Muitos Reports Pendentes',
+            message: `Existem ${pendingReports.count} reports aguardando análise.`,
+            action: 'Ver Reports'
+        });
+    }
+    
+    // Verifica baixa atividade
+    if (metrics.overview.activeUsers < 5) {
+        alerts.push({
+            type: 'info',
+            icon: 'fas fa-info-circle',
+            title: 'Baixa Atividade de Usuários',
+            message: `Apenas ${metrics.overview.activeUsers} usuários ativos nos últimos 30 dias.`,
+            action: 'Estratégias de Engajamento'
+        });
+    }
+    
+    // Verifica crescimento negativo
+    if (metrics.overview.userGrowthRate < 0) {
+        alerts.push({
+            type: 'error',
+            icon: 'fas fa-trending-down',
+            title: 'Crescimento Negativo',
+            message: `Taxa de crescimento de usuários: ${metrics.overview.userGrowthRate}%`,
+            action: 'Analisar Causas'
+        });
+    }
+    
+    // Verifica se há poucas questões
+    if (metrics.overview.totalQuestions < 100) {
+        alerts.push({
+            type: 'warning',
+            icon: 'fas fa-question-circle',
+            title: 'Poucas Questões Disponíveis',
+            message: `Apenas ${metrics.overview.totalQuestions} questões no sistema.`,
+            action: 'Adicionar Mais Questões'
+        });
+    }
+    
+    if (alerts.length > 0) {
+        alertsContainer.classList.remove('hidden');
+        alertsContainer.innerHTML = alerts.map(alert => {
+            const colorClasses = {
+                'error': 'bg-red-50 border-red-200 text-red-800',
+                'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                'info': 'bg-blue-50 border-blue-200 text-blue-800',
+                'success': 'bg-green-50 border-green-200 text-green-800'
+            };
+            
+            return `
+                <div class="flex items-start p-4 border rounded-lg ${colorClasses[alert.type]}">
+                    <i class="${alert.icon} mr-3 mt-1"></i>
+                    <div class="flex-1">
+                        <h4 class="font-medium">${alert.title}</h4>
+                        <p class="text-sm mt-1">${alert.message}</p>
+                    </div>
+                    <button class="ml-4 text-sm underline hover:no-underline">${alert.action}</button>
+                </div>
+            `;
+        }).join('');
+    } else {
+        alertsContainer.classList.add('hidden');
+    }
+}
+
+function renderRecentActivityChart(sessionsData) {
+    const container = document.getElementById('recent-activity-chart');
+    if (!container) return;
+    
+    if (!sessionsData || sessionsData.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4 text-gray-500">
+                <i class="fas fa-chart-line text-gray-400 text-2xl mb-2"></i>
+                <p>Nenhuma atividade recente</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const maxCount = Math.max(...sessionsData.map(d => d.count));
+    
+    container.innerHTML = sessionsData.map(day => {
+        const percentage = maxCount > 0 ? (day.count / maxCount * 100) : 0;
+        const date = new Date(day.date).toLocaleDateString('pt-BR', { 
+            weekday: 'short', 
+            day: '2-digit', 
+            month: '2-digit' 
+        });
+        
+        return `
+            <div class="flex items-center justify-between py-2">
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm font-medium w-16">${date}</span>
+                    <div class="flex-1 bg-gray-200 rounded-full h-3 min-w-24">
+                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300" 
+                             style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+                <span class="text-sm font-bold text-gray-700 ml-2">${day.count}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderSystemStatus(metrics) {
+    const container = document.getElementById('system-status');
+    if (!container) return;
+    
+    const statusItems = [
+        {
+            label: 'Total de Usuários',
+            value: metrics.overview.totalUsers,
+            status: metrics.overview.totalUsers > 50 ? 'good' : metrics.overview.totalUsers > 10 ? 'warning' : 'error',
+            icon: 'fas fa-users'
+        },
+        {
+            label: 'Questões Disponíveis',
+            value: metrics.overview.totalQuestions,
+            status: metrics.overview.totalQuestions > 200 ? 'good' : metrics.overview.totalQuestions > 50 ? 'warning' : 'error',
+            icon: 'fas fa-question-circle'
+        },
+        {
+            label: 'Reports Pendentes',
+            value: metrics.overview.totalReports,
+            status: metrics.overview.totalReports < 5 ? 'good' : metrics.overview.totalReports < 15 ? 'warning' : 'error',
+            icon: 'fas fa-flag'
+        },
+        {
+            label: 'Performance Média',
+            value: `${metrics.performance.avgScore}%`,
+            status: parseFloat(metrics.performance.avgScore) > 70 ? 'good' : parseFloat(metrics.performance.avgScore) > 50 ? 'warning' : 'error',
+            icon: 'fas fa-chart-bar'
+        }
+    ];
+    
+    const statusColors = {
+        'good': 'text-green-600 bg-green-100',
+        'warning': 'text-yellow-600 bg-yellow-100',
+        'error': 'text-red-600 bg-red-100'
+    };
+    
+    const statusIcons = {
+        'good': 'fas fa-check-circle',
+        'warning': 'fas fa-exclamation-triangle',
+        'error': 'fas fa-times-circle'
+    };
+    
+    container.innerHTML = statusItems.map(item => {
+        return `
+            <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div class="flex items-center space-x-3">
+                    <i class="${item.icon} text-gray-600"></i>
+                    <span class="text-sm font-medium">${item.label}</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold">${item.value}</span>
+                    <i class="${statusIcons[item.status]} ${statusColors[item.status]} p-1 rounded"></i>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 function renderDifficultyChart(difficultyData) {
