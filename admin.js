@@ -2245,6 +2245,8 @@ function debounce(func, wait) {
 
 async function loadDashboardMetrics() {
     console.log('[DASHBOARD] Carregando métricas...');
+    console.log('[DASHBOARD] API_URL:', API_URL);
+    console.log('[DASHBOARD] Token disponível:', token ? 'Sim' : 'Não');
     
     const dashboardLoading = document.getElementById('dashboard-loading');
     const dashboardContent = document.getElementById('dashboard-content');
@@ -2253,12 +2255,23 @@ async function loadDashboardMetrics() {
     if (dashboardContent) dashboardContent.classList.add('hidden');
     
     try {
+        console.log('[DASHBOARD] Fazendo requisição para:', `${API_URL}/admin/dashboard/metrics`);
+        
         const response = await fetch(`${API_URL}/admin/dashboard/metrics`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
         
+        console.log('[DASHBOARD] Status da resposta:', response.status);
+        console.log('[DASHBOARD] Headers da resposta:', [...response.headers.entries()]);
+        
         if (!response.ok) {
-            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+            const errorText = await response.text();
+            console.error('[DASHBOARD] Erro da resposta:', errorText);
+            throw new Error(`Erro ${response.status}: ${errorText}`);
         }
         
         const metrics = await response.json();
@@ -2276,10 +2289,14 @@ async function loadDashboardMetrics() {
             dashboardLoading.innerHTML = `
                 <div class="text-center py-8">
                     <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
-                    <p class="text-red-600">Erro ao carregar métricas</p>
-                    <p class="text-sm text-gray-500">${error.message}</p>
-                    <button onclick="loadDashboardMetrics()" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Tentar Novamente
+                    <p class="text-red-600 font-semibold">Erro ao carregar métricas</p>
+                    <p class="text-sm text-gray-500 mt-1">${error.message}</p>
+                    <div class="mt-4 text-xs text-gray-400">
+                        <p>API URL: ${API_URL}</p>
+                        <p>Token: ${token ? 'Disponível' : 'Não disponível'}</p>
+                    </div>
+                    <button onclick="loadDashboardMetrics()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-sync-alt mr-2"></i>Tentar Novamente
                     </button>
                 </div>
             `;
