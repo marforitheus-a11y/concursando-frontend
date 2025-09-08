@@ -1049,37 +1049,6 @@ function showQuizResults() {
     }
 }
 
-    // selection flow: pick one, then press Respond
-    document.querySelectorAll('.option').forEach(optionElement => {
-        optionElement.addEventListener('click', (e) => {
-            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-            e.currentTarget.classList.add('selected');
-        });
-    });
-
-    // add respond and report buttons inside an actions container
-    const actions = document.createElement('div');
-    actions.className = 'quiz-actions';
-
-    const respondBtn = document.createElement('button');
-    respondBtn.textContent = 'Responder';
-    respondBtn.className = 'btn-respond';
-    respondBtn.addEventListener('click', () => {
-        const selected = document.querySelector('.option.selected');
-        if (!selected) { alert('Selecione uma opção antes de responder.'); return; }
-        selectAnswer(selected, mainContent);
-    });
-
-    const reportBtn = document.createElement('button');
-    reportBtn.textContent = 'Reportar Erro';
-    reportBtn.className = 'btn-report';
-    reportBtn.addEventListener('click', () => openReportModal(currentQuestion));
-
-    actions.appendChild(respondBtn);
-    actions.appendChild(reportBtn);
-    document.getElementById('quiz-screen').appendChild(actions);
-}
-
 function openReportModal(question) {
     const modal = document.getElementById('report-modal');
     if (!modal) return;

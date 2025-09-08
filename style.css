@@ -68,6 +68,17 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-secondary: 'Poppins', 'Inter', sans-serif;
+  --font-body: var(--font-primary);
+  --font-heading: var(--font-secondary);
+  
+  /* Text Colors */
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
 }
 
 /* ==================== RESET & BASE ==================== */
@@ -82,12 +93,21 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: var(--font-body);
   line-height: 1.6;
-  color: var(--text);
+  color: var(--text-primary);
   background: var(--gradient-bg);
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* Garantir que todos os elementos de formulário usem a fonte consistente */
+input, button, select, textarea {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 /* Site Theme Override */
@@ -798,7 +818,7 @@ body.performance-page .logo-img-header{width:180px;max-height:180px}
 /* Layered logo behind title following Laws of UX: visual hierarchy, contrast, and aesthetic-usability */
 .logo-header{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .logo-svg{position:absolute;left:50%;top:2px;transform:translateX(-50%) translateY(-16%);width:120px;height:120px;color:var(--accent);opacity:var(--logo-alpha);pointer-events:none;z-index:0}
-.brand-title{position:relative;z-index:1;font-size:1.4rem;color:var(--text);letter-spacing:0.4px;font-family:Inter, Poppins, sans-serif}
+.brand-title{position:relative;z-index:1;font-size:1.4rem;color:var(--text-primary);letter-spacing:0.4px;font-family:var(--font-heading)}
 
 /* Replace small image usage with accessible hidden fallback */
 .logo-img-header{width:56px;height:56px;display:none}
