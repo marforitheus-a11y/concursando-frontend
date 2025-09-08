@@ -1,146 +1,242 @@
-// arquivo: conta.js
+// Conta.js - Sistema de gerenciamento de conta moderna
 const token = localStorage.getItem('token');
-const API_URL = 'https://quiz-api-z4ri.onrender.com'; // ⚠️ Sua URL
+const username = localStorage.getItem('username');
+
+function resolveApiUrl() {
+    try {
+        const u = new URL(window.location.href);
+        const fromParam = u.searchParams.get('api');
+        if (fromParam) { localStorage.setItem('api_url', fromParam); return fromParam; }
+    } catch (_) { /* ignore */ }
+    const stored = localStorage.getItem('api_url');
+    if (stored) return stored;
+    const origin = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : '';
+    const isLocal = origin.includes('localhost') || origin.includes('127.0.0.1');
+    return isLocal ? 'http://localhost:3000' : 'https://quiz-api-z4ri.onrender.com';
+}
+
+const API_URL = resolveApiUrl();
+
+if (!token) {
+    window.location.href = 'index.html';
+}
+
+let originalData = {};
+let isEditMode = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadAccount();
-    const addBtn = document.getElementById('add-tag-btn');
-    const newTagInput = document.getElementById('new-tag-input');
-    if (addBtn) addBtn.addEventListener('click', () => {
-        const v = newTagInput.value && newTagInput.value.trim();
-        if (!v) return;
-        addTagForCurrentUser(v);
-        newTagInput.value = '';
-    });
-    if (newTagInput) newTagInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') addBtn.click(); });
-    // safe logout binding if present
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.addEventListener('click', () => { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'index.html'; });
+    loadAccountData();
+    setupEventListeners();
 });
 
-function getCurrentUserKey() {
-    // try to identify user by stored user object or token
-    const userRaw = localStorage.getItem('user') || sessionStorage.getItem('user');
-    if (userRaw) {
-        try { const u = JSON.parse(userRaw); if (u && u.username) return `user_tags_${u.username}`; } catch(e){}
-    }
-    // fallback to token-based key
-    const t = localStorage.getItem('token') || '';
-    return `user_tags_${t.slice(0,10)}`;
+function setupEventListeners() {
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    editBtn?.addEventListener('click', enterEditMode);
+    saveBtn?.addEventListener('click', saveChanges);
+    cancelBtn?.addEventListener('click', cancelEdit);
+    logoutBtn?.addEventListener('click', logout);
 }
 
-async function loadAccount() {
-    const usernameEl = document.getElementById('account-username');
-    const createdEl = document.getElementById('account-created');
-    const subscriptionEl = document.getElementById('account-subscription');
-
-    // default placeholders
-    usernameEl.textContent = '—'; createdEl.textContent = '—'; subscriptionEl.textContent = '—';
-
-    // Try backend route first
+async function loadAccountData() {
     try {
-        const resp = await fetch(`${API_URL}/account/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (resp.ok) {
-            const data = await resp.json();
-            usernameEl.textContent = data.username || data.name || '—';
-            createdEl.textContent = data.created_at ? new Date(data.created_at).toLocaleDateString('pt-BR') : '—';
-            subscriptionEl.textContent = data.subscription_expires_at ? new Date(data.subscription_expires_at).toLocaleDateString('pt-BR') : 'Nenhuma';
-            // load tags from backend if possible
-            try {
-                const t = await fetch(`${API_URL}/account/tags`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (t.ok) {
-                    const tags = await t.json();
-                    renderTags(tags);
-                    return;
-                }
-            } catch (e) { /* fallback */ }
-            renderTags(loadTagsFromStorage());
+        showMessage('Carregando informações da conta...', 'info');
+        
+        const response = await fetch(`${API_URL}/account/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro ao carregar dados da conta');
+        }
+
+        const data = await response.json();
+        originalData = { ...data };
+        populateForm(data);
+        hideMessage();
+
+    } catch (error) {
+        console.error('Erro ao carregar conta:', error);
+        showMessage('Erro ao carregar informações da conta. Usando dados locais.', 'error');
+        loadFallbackData();
+    }
+}
+
+function populateForm(data) {
+    document.getElementById('username').value = data.username || '';
+    document.getElementById('email').value = data.email || '';
+    document.getElementById('full_name').value = data.full_name || data.name || '';
+    document.getElementById('phone').value = data.phone || '';
+    document.getElementById('created_at').value = data.created_at ? 
+        new Date(data.created_at).toLocaleDateString('pt-BR') : 'Não informado';
+    document.getElementById('subscription_status').value = data.subscription_expires_at ? 
+        `Ativo até ${new Date(data.subscription_expires_at).toLocaleDateString('pt-BR')}` : 'Gratuito';
+}
+
+function loadFallbackData() {
+    const fallbackData = {
+        username: username || 'Usuário',
+        email: '',
+        full_name: '',
+        phone: '',
+        created_at: new Date().toISOString(),
+        subscription_status: 'Gratuito'
+    };
+    
+    originalData = { ...fallbackData };
+    populateForm(fallbackData);
+}
+
+function enterEditMode() {
+    isEditMode = true;
+    
+    // Enable form fields
+    const editableFields = ['email', 'full_name', 'phone', 'current_password', 'new_password'];
+    editableFields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+            element.disabled = false;
+        }
+    });
+
+    // Show/hide buttons
+    document.getElementById('edit-btn').style.display = 'none';
+    document.getElementById('save-btn').style.display = 'inline-flex';
+    document.getElementById('cancel-btn').style.display = 'inline-flex';
+    document.getElementById('password-section').style.display = 'block';
+
+    // Add edit mode class
+    document.getElementById('account-form').classList.add('edit-mode');
+
+    showMessage('Modo de edição ativado. Altere os campos desejados e clique em "Salvar".', 'info');
+}
+
+function cancelEdit() {
+    isEditMode = false;
+    
+    // Restore original values
+    populateForm(originalData);
+    
+    exitEditMode();
+    showMessage('Alterações canceladas.', 'info');
+}
+
+function exitEditMode() {
+    // Disable form fields
+    const editableFields = ['email', 'full_name', 'phone', 'current_password', 'new_password'];
+    editableFields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+            element.disabled = true;
+            if (field.includes('password')) {
+                element.value = '';
+            }
+        }
+    });
+
+    // Show/hide buttons
+    document.getElementById('edit-btn').style.display = 'inline-flex';
+    document.getElementById('save-btn').style.display = 'none';
+    document.getElementById('cancel-btn').style.display = 'none';
+    document.getElementById('password-section').style.display = 'none';
+
+    // Remove edit mode class
+    document.getElementById('account-form').classList.remove('edit-mode');
+}
+
+async function saveChanges() {
+    try {
+        const formData = new FormData(document.getElementById('account-form'));
+        const updateData = {};
+        
+        // Collect changed data
+        const fields = ['email', 'full_name', 'phone'];
+        fields.forEach(field => {
+            const value = formData.get(field);
+            if (value && value !== originalData[field]) {
+                updateData[field] = value;
+            }
+        });
+
+        // Handle password change
+        const currentPassword = formData.get('current_password');
+        const newPassword = formData.get('new_password');
+        if (currentPassword && newPassword) {
+            updateData.current_password = currentPassword;
+            updateData.new_password = newPassword;
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            showMessage('Nenhuma alteração detectada.', 'info');
+            exitEditMode();
             return;
         }
-    } catch (err) { /* ignore and use fallback */ }
 
-    // fallback: read from localStorage 'user'
-    const userRaw = localStorage.getItem('user') || sessionStorage.getItem('user');
-    if (userRaw) {
-        try {
-            const u = JSON.parse(userRaw);
-            usernameEl.textContent = u.username || '—';
-            createdEl.textContent = 'Local';
-            subscriptionEl.textContent = 'Local';
-        } catch (e) { /* ignore */ }
+        showMessage('Salvando alterações...', 'info');
+
+        const response = await fetch(`${API_URL}/account/update`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updateData)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Erro ao salvar alterações');
+        }
+
+        const updatedData = await response.json();
+        originalData = { ...originalData, ...updatedData };
+        
+        exitEditMode();
+        showMessage('Informações atualizadas com sucesso!', 'success');
+
+    } catch (error) {
+        console.error('Erro ao salvar:', error);
+        showMessage(error.message || 'Erro ao salvar alterações.', 'error');
     }
-    renderTags(loadTagsFromStorage());
 }
 
-function loadTagsFromStorage() {
-    // try backend first when logged in
-    // fallback to localStorage
-    const key = getCurrentUserKey();
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : [];
-}
-
-function renderTags(tags) {
-    const container = document.getElementById('tags-container');
-    container.innerHTML = '';
-    if (!tags || tags.length === 0) {
-        container.innerHTML = '<div class="text-gray-500">Nenhuma tag adicionada.</div>';
-        return;
+function showMessage(text, type = 'info') {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = `
+        <div class="${type}-message">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            ${text}
+        </div>
+    `;
+    
+    if (type === 'success' || type === 'info') {
+        setTimeout(() => {
+            hideMessage();
+        }, type === 'success' ? 3000 : 5000);
     }
-    tags.forEach(t => {
-        const pill = document.createElement('div');
-        pill.className = 'tag-pill';
-        pill.textContent = t;
-        const remove = document.createElement('button');
-        remove.className = 'btn-small';
-        remove.style.marginLeft = '8px';
-        remove.textContent = 'x';
-        remove.addEventListener('click', () => { removeTagForCurrentUser(t); });
-        const wrapper = document.createElement('div');
-        wrapper.style.display = 'inline-flex';
-        wrapper.style.alignItems = 'center';
-        wrapper.appendChild(pill);
-        wrapper.appendChild(remove);
-        container.appendChild(wrapper);
-    });
 }
 
-function addTagForCurrentUser(tag) {
-    // attempt to persist to backend
-    (async () => {
-        try {
-            // fetch existing, then PUT
-            const existing = await fetch(`${API_URL}/account/tags`, { headers: { 'Authorization': `Bearer ${token}` } });
-            let tags = [];
-            if (existing.ok) tags = await existing.json();
-            if (!tags.includes(tag)) tags.push(tag);
-            const put = await fetch(`${API_URL}/account/tags`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ tags }) });
-            if (put.ok) { renderTags(tags); return; }
-        } catch (e) { /* fallback to localStorage */ }
-        // fallback
-        const key = getCurrentUserKey();
-        const tags = loadTagsFromStorage();
-        if (tags.includes(tag)) return;
-        tags.push(tag);
-        localStorage.setItem(key, JSON.stringify(tags));
-        renderTags(tags);
-    })();
+function hideMessage() {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = '';
 }
 
-function removeTagForCurrentUser(tag) {
-    (async () => {
+function logout() {
+    if (confirm('Tem certeza que deseja sair?')) {
         try {
-            const existing = await fetch(`${API_URL}/account/tags`, { headers: { 'Authorization': `Bearer ${token}` } });
-            let tags = [];
-            if (existing.ok) tags = await existing.json();
-            tags = tags.filter(t => t !== tag);
-            const put = await fetch(`${API_URL}/account/tags`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ tags }) });
-            if (put.ok) { renderTags(tags); return; }
-        } catch (e) { /* fallback */ }
-        const key = getCurrentUserKey();
-        let tags = loadTagsFromStorage();
-        tags = tags.filter(t => t !== tag);
-        localStorage.setItem(key, JSON.stringify(tags));
-        renderTags(tags);
-    })();
+            fetch(`${API_URL}/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username })
+            });
+        } finally {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+    }
 }

@@ -71,14 +71,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CARREGAMENTO INICIAL DO CONTEÚDO ---
-    loadThemes(mainContent);
+    loadThemes();
 });
 
 
 // --- FUNÇÕES DE LÓGICA DO QUIZ ---
 
 async function loadThemes(mainContent) {
-    mainContent.innerHTML = '<p>Carregando simulado...</p>';
     try {
         const response = await fetch(`${API_URL}/themes`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!response.ok) {
@@ -89,10 +88,67 @@ async function loadThemes(mainContent) {
             throw new Error(`Erro do servidor: ${response.status}`);
         }
         const themes = await response.json();
-        displaySetupScreen(mainContent, themes);
+        console.log('Temas carregados:', themes); // Debug
+        populateSubjectSelect(themes);
     } catch (error) {
-        mainContent.innerHTML = `<p class="error">Não foi possível carregar os temas.</p>`;
         console.error("Erro em loadThemes:", error);
+        showError('Não foi possível carregar as disciplinas. Verifique sua conexão.');
+    }
+}
+
+function populateSubjectSelect(themes) {
+    const subjectSelect = document.getElementById('subject-select');
+    if (!subjectSelect) {
+        console.error('Elemento subject-select não encontrado');
+        return;
+    }
+
+    // Clear existing options except the first one
+    subjectSelect.innerHTML = '<option value="">Selecione uma disciplina</option>';
+
+    // Group themes by category
+    const grouped = {};
+    themes.forEach(theme => {
+        const categoryId = theme.category_id || 'uncategorized';
+        const categoryName = theme.category_name || 'Sem categoria';
+        
+        if (!grouped[categoryId]) {
+            grouped[categoryId] = {
+                id: categoryId,
+                name: categoryName,
+                themes: []
+            };
+        }
+        grouped[categoryId].themes.push(theme);
+    });
+
+    // Add options to select
+    Object.values(grouped).forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = `${category.name} (${category.themes.length} temas)`;
+        subjectSelect.appendChild(option);
+    });
+
+    console.log('Select populado com', Object.keys(grouped).length, 'categorias');
+}
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.style.cssText = `
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        border: 1px solid #fecaca;
+    `;
+    errorDiv.textContent = message;
+    
+    const setupDiv = document.getElementById('quiz-setup');
+    if (setupDiv) {
+        setupDiv.insertBefore(errorDiv, setupDiv.firstChild);
     }
 }
 
