@@ -72,12 +72,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CARREGAMENTO INICIAL DO CONTEÚDO ---
     loadThemes();
+    
+    // --- CARREGAR ESTATÍSTICAS DO CABEÇALHO ---
+    updateHeaderStats();
 });
+
+async function updateHeaderStats() {
+    try {
+        // Atualizar timer (começar do zero)
+        const timerElement = document.getElementById('quiz-timer');
+        if (timerElement) {
+            timerElement.textContent = '00:00';
+        }
+
+        // Atualizar contador de questões
+        const questionCountElement = document.getElementById('quiz-question-count');
+        if (questionCountElement) {
+            questionCountElement.textContent = '0 / 0';
+        }
+
+        // Buscar estatísticas do usuário
+        const response = await fetch(`${API_URL}/user/stats`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const stats = await response.json();
+            
+            // Atualizar precisão baseada nas estatísticas do usuário
+            const accuracyElement = document.getElementById('quiz-accuracy');
+            if (accuracyElement && stats.accuracy !== undefined) {
+                accuracyElement.textContent = `${Math.round(stats.accuracy)}%`;
+            } else if (accuracyElement) {
+                accuracyElement.textContent = '0%';
+            }
+        } else {
+            // Fallback para valores padrão
+            const accuracyElement = document.getElementById('quiz-accuracy');
+            if (accuracyElement) {
+                accuracyElement.textContent = '0%';
+            }
+        }
+    } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+        // Manter valores padrão em caso de erro
+    }
+}
 
 
 // --- FUNÇÕES DE LÓGICA DO QUIZ ---
 
-async function loadThemes(mainContent) {
+async function loadThemes() {
     try {
         const response = await fetch(`${API_URL}/themes`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!response.ok) {
@@ -90,6 +135,7 @@ async function loadThemes(mainContent) {
         const themes = await response.json();
         console.log('Temas carregados:', themes); // Debug
         populateSubjectSelect(themes);
+        setupThemeSelection(themes);
     } catch (error) {
         console.error("Erro em loadThemes:", error);
         showError('Não foi possível carregar as disciplinas. Verifique sua conexão.');
@@ -131,6 +177,121 @@ function populateSubjectSelect(themes) {
     });
 
     console.log('Select populado com', Object.keys(grouped).length, 'categorias');
+}
+
+function setupThemeSelection(allThemes) {
+    const subjectSelect = document.getElementById('subject-select');
+    const startButton = document.getElementById('start-quiz');
+    
+    // Criar container para temas se não existir
+    let themesContainer = document.getElementById('themes-container');
+    if (!themesContainer) {
+        themesContainer = document.createElement('div');
+        themesContainer.id = 'themes-container';
+        themesContainer.innerHTML = `
+            <div class="quiz-form-section" id="themes-section" style="display: none;">
+                <h3><i class="fas fa-list"></i> Selecione os Temas</h3>
+                <div id="themes-list" class="themes-list"></div>
+            </div>
+        `;
+        
+        // Inserir antes da seção de dificuldade
+        const difficultySection = document.querySelector('.quiz-form-section:nth-child(2)');
+        difficultySection.parentNode.insertBefore(themesContainer, difficultySection);
+    }
+
+    // Event listener para mudança de disciplina
+    subjectSelect.addEventListener('change', function() {
+        const selectedCategoryId = this.value;
+        const themesSection = document.getElementById('themes-section');
+        const themesList = document.getElementById('themes-list');
+        
+        if (selectedCategoryId) {
+            // Filtrar temas da categoria selecionada
+            const categoryThemes = allThemes.filter(theme => 
+                theme.category_id == selectedCategoryId
+            );
+            
+            if (categoryThemes.length > 0) {
+                // Mostrar seção de temas
+                themesSection.style.display = 'block';
+                
+                // Gerar lista de temas
+                themesList.innerHTML = categoryThemes.map(theme => `
+                    <div class="theme-item">
+                        <label class="theme-label">
+                            <input type="checkbox" name="theme" value="${theme.id}" checked>
+                            <div class="theme-info">
+                                <span class="theme-name">${theme.name}</span>
+                                <span class="theme-count">${theme.question_count || 0} questões</span>
+                            </div>
+                        </label>
+                    </div>
+                `).join('');
+                
+                // Adicionar CSS para os temas
+                if (!document.getElementById('themes-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'themes-styles';
+                    style.textContent = `
+                        .themes-list {
+                            display: grid;
+                            gap: 0.75rem;
+                            margin-top: 1rem;
+                        }
+                        
+                        .theme-item {
+                            background: rgba(255, 255, 255, 0.7);
+                            border: 2px solid #e5e7eb;
+                            border-radius: 12px;
+                            padding: 1rem;
+                            transition: all 0.2s ease;
+                        }
+                        
+                        .theme-item:hover {
+                            border-color: #4f46e5;
+                            background: rgba(255, 255, 255, 0.9);
+                        }
+                        
+                        .theme-label {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.75rem;
+                            cursor: pointer;
+                            width: 100%;
+                        }
+                        
+                        .theme-label input[type="checkbox"] {
+                            width: 18px;
+                            height: 18px;
+                            accent-color: #4f46e5;
+                        }
+                        
+                        .theme-info {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 0.25rem;
+                            flex: 1;
+                        }
+                        
+                        .theme-name {
+                            font-weight: 500;
+                            color: #374151;
+                        }
+                        
+                        .theme-count {
+                            font-size: 0.875rem;
+                            color: #6b7280;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+        } else {
+            // Esconder seção de temas
+            themesSection.style.display = 'none';
+        }
+    });
 }
 
 function showError(message) {
