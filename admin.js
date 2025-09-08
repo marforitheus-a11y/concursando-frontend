@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cancelResetBtn = document.getElementById('cancel-reset');
     
     // --- CARREGAMENTO INICIAL ---
+    loadDashboardMetrics();
     loadThemes();
     loadUsers();
     loadReports();
@@ -2238,4 +2239,201 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+// === DASHBOARD METRICS FUNCTIONS ===
+
+async function loadDashboardMetrics() {
+    console.log('[DASHBOARD] Carregando métricas...');
+    
+    const dashboardLoading = document.getElementById('dashboard-loading');
+    const dashboardContent = document.getElementById('dashboard-content');
+    
+    if (dashboardLoading) dashboardLoading.style.display = 'block';
+    if (dashboardContent) dashboardContent.classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/admin/dashboard/metrics`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+        
+        const metrics = await response.json();
+        console.log('[DASHBOARD] Métricas recebidas:', metrics);
+        
+        renderDashboardMetrics(metrics);
+        
+        if (dashboardLoading) dashboardLoading.style.display = 'none';
+        if (dashboardContent) dashboardContent.classList.remove('hidden');
+        
+    } catch (error) {
+        console.error('[DASHBOARD] Erro ao carregar métricas:', error);
+        
+        if (dashboardLoading) {
+            dashboardLoading.innerHTML = `
+                <div class="text-center py-8">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-2xl mb-2"></i>
+                    <p class="text-red-600">Erro ao carregar métricas</p>
+                    <p class="text-sm text-gray-500">${error.message}</p>
+                    <button onclick="loadDashboardMetrics()" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Tentar Novamente
+                    </button>
+                </div>
+            `;
+        }
+    }
+}
+
+function renderDashboardMetrics(metrics) {
+    console.log('[DASHBOARD] Renderizando métricas:', metrics);
+    
+    // Métricas gerais
+    document.getElementById('metric-total-users').textContent = metrics.overview.totalUsers.toLocaleString();
+    document.getElementById('metric-total-questions').textContent = metrics.overview.totalQuestions.toLocaleString();
+    document.getElementById('metric-total-categories').textContent = metrics.overview.totalCategories.toLocaleString();
+    document.getElementById('metric-total-reports').textContent = metrics.overview.totalReports.toLocaleString();
+    
+    // Métricas de atividade
+    document.getElementById('metric-active-users').textContent = metrics.overview.activeUsers.toLocaleString();
+    document.getElementById('metric-growth-rate').textContent = `${metrics.overview.userGrowthRate}%`;
+    
+    // Performance
+    document.getElementById('metric-avg-score').textContent = `${metrics.performance.avgScore}%`;
+    document.getElementById('metric-total-sessions').textContent = metrics.performance.totalSessions.toLocaleString();
+    document.getElementById('metric-max-score').textContent = `${metrics.performance.maxScore}%`;
+    
+    // Gráfico de dificuldade
+    renderDifficultyChart(metrics.questionStats.byDifficulty);
+    
+    // Gráfico de categorias
+    renderCategoriesChart(metrics.questionStats.byCategory);
+    
+    // Top usuários
+    renderTopUsersTable(metrics.activity.topUsers);
+    
+    // Questões mais reportadas
+    renderReportedQuestionsTable(metrics.reports.mostReported);
+    
+    // Última atualização
+    const lastUpdated = new Date(metrics.lastUpdated).toLocaleString('pt-BR');
+    document.getElementById('last-updated').textContent = lastUpdated;
+}
+
+function renderDifficultyChart(difficultyData) {
+    const container = document.getElementById('difficulty-chart');
+    if (!container) return;
+    
+    const colors = {
+        'easy': 'bg-green-500',
+        'medium': 'bg-yellow-500', 
+        'hard': 'bg-red-500'
+    };
+    
+    const labels = {
+        'easy': 'Fácil',
+        'medium': 'Médio',
+        'hard': 'Difícil'
+    };
+    
+    const total = difficultyData.reduce((sum, item) => sum + item.count, 0);
+    
+    container.innerHTML = difficultyData.map(item => {
+        const percentage = total > 0 ? (item.count / total * 100).toFixed(1) : 0;
+        const colorClass = colors[item.difficulty] || 'bg-gray-500';
+        const label = labels[item.difficulty] || item.difficulty;
+        
+        return `
+            <div class="flex items-center justify-between py-2">
+                <div class="flex items-center space-x-3">
+                    <div class="w-4 h-4 rounded ${colorClass}"></div>
+                    <span class="text-sm font-medium">${label}</span>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm font-bold">${item.count}</div>
+                    <div class="text-xs text-gray-500">${percentage}%</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderCategoriesChart(categoryData) {
+    const container = document.getElementById('categories-chart');
+    if (!container) return;
+    
+    const maxCount = Math.max(...categoryData.map(item => item.count));
+    
+    container.innerHTML = categoryData.slice(0, 5).map(item => {
+        const percentage = maxCount > 0 ? (item.count / maxCount * 100) : 0;
+        
+        return `
+            <div class="py-2">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium truncate">${item.category}</span>
+                    <span class="text-sm font-bold">${item.count}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${percentage}%"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderTopUsersTable(topUsers) {
+    const tbody = document.getElementById('top-users-table');
+    if (!tbody) return;
+    
+    tbody.innerHTML = topUsers.map(user => {
+        const lastActivity = user.lastActivity 
+            ? new Date(user.lastActivity).toLocaleDateString('pt-BR')
+            : 'Nunca';
+            
+        return `
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-2">
+                    <div class="font-medium text-sm">${user.username}</div>
+                    <div class="text-xs text-gray-500">${user.email}</div>
+                </td>
+                <td class="px-4 py-2 text-sm font-medium">${user.quizCount}</td>
+                <td class="px-4 py-2 text-sm text-gray-600">${lastActivity}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderReportedQuestionsTable(reportedQuestions) {
+    const tbody = document.getElementById('reported-questions-table');
+    if (!tbody) return;
+    
+    if (reportedQuestions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="2" class="px-4 py-4 text-center text-gray-500">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    Nenhuma questão reportada
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = reportedQuestions.map(question => {
+        return `
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-2">
+                    <div class="text-sm font-medium">${question.question}</div>
+                    <div class="text-xs text-gray-500">ID: ${question.questionId}</div>
+                </td>
+                <td class="px-4 py-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ${question.reportCount} report${question.reportCount > 1 ? 's' : ''}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }

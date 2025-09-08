@@ -265,6 +265,182 @@
     </header>
 
     <main class="space-y-16">
+      <!-- Dashboard de Métricas -->
+      <section aria-labelledby="dashboard-title">
+        <h2 id="dashboard-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">
+          <i class="fas fa-chart-line mr-2"></i>Dashboard de Métricas
+        </h2>
+        
+        <div id="dashboard-loading" class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p class="mt-2 text-gray-600">Carregando métricas...</p>
+        </div>
+        
+        <div id="dashboard-content" class="hidden space-y-6">
+          <!-- Métricas Gerais -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                  <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Total de Usuários</p>
+                  <p id="metric-total-users" class="text-2xl font-bold text-gray-900">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-2 bg-green-100 rounded-lg">
+                  <i class="fas fa-question-circle text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Total de Questões</p>
+                  <p id="metric-total-questions" class="text-2xl font-bold text-gray-900">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-2 bg-yellow-100 rounded-lg">
+                  <i class="fas fa-folder text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Categorias</p>
+                  <p id="metric-total-categories" class="text-2xl font-bold text-gray-900">-</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-2 bg-red-100 rounded-lg">
+                  <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Reports Pendentes</p>
+                  <p id="metric-total-reports" class="text-2xl font-bold text-gray-900">-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Métricas de Atividade -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-chart-bar mr-2"></i>Usuários Ativos (30 dias)
+              </h3>
+              <div class="flex items-center space-x-4">
+                <div class="text-center">
+                  <p id="metric-active-users" class="text-3xl font-bold text-blue-600">-</p>
+                  <p class="text-sm text-gray-600">Usuários Ativos</p>
+                </div>
+                <div class="text-center">
+                  <p id="metric-growth-rate" class="text-2xl font-bold text-green-600">-</p>
+                  <p class="text-sm text-gray-600">Taxa de Crescimento</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-trophy mr-2"></i>Performance Geral
+              </h3>
+              <div class="space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Pontuação Média:</span>
+                  <span id="metric-avg-score" class="font-semibold">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Total de Sessões:</span>
+                  <span id="metric-total-sessions" class="font-semibold">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Melhor Pontuação:</span>
+                  <span id="metric-max-score" class="font-semibold">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Gráficos e Listas -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Questões por Dificuldade -->
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-layer-group mr-2"></i>Questões por Dificuldade
+              </h3>
+              <div id="difficulty-chart" class="space-y-2">
+                <!-- Será preenchido dinamicamente -->
+              </div>
+            </div>
+            
+            <!-- Top Categorias -->
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-list mr-2"></i>Top Categorias (Questões)
+              </h3>
+              <div id="categories-chart" class="space-y-2">
+                <!-- Será preenchido dinamicamente -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tabelas de Dados -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Top Usuários -->
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-star mr-2"></i>Top 5 Usuários Mais Ativos
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Usuário</th>
+                      <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Quizzes</th>
+                      <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Última Atividade</th>
+                    </tr>
+                  </thead>
+                  <tbody id="top-users-table">
+                    <!-- Será preenchido dinamicamente -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Questões Mais Reportadas -->
+            <div class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-flag mr-2"></i>Questões Mais Reportadas
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Questão</th>
+                      <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Reports</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reported-questions-table">
+                    <!-- Será preenchido dinamicamente -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center text-sm text-gray-500">
+            <i class="fas fa-clock mr-1"></i>
+            Última atualização: <span id="last-updated">-</span>
+          </div>
+        </div>
+      </section>
+
       <!-- Gerenciar Categorias -->
       <section aria-labelledby="manage-categories-title">
         <h2 id="manage-categories-title" class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-300 pb-2">Gerenciar Categorias</h2>
