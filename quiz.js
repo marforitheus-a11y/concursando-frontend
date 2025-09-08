@@ -75,6 +75,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- CARREGAR ESTATÍSTICAS DO CABEÇALHO ---
     updateHeaderStats();
+    
+    // --- EVENT LISTENER PARA INICIAR SIMULADO ---
+    const startQuizBtn = document.getElementById('start-quiz');
+    if (startQuizBtn) {
+        startQuizBtn.addEventListener('click', () => {
+            startQuizFromNewInterface();
+        });
+    }
 });
 
 async function updateHeaderStats() {
@@ -181,23 +189,28 @@ function populateSubjectSelect(themes) {
 
 function setupThemeSelection(allThemes) {
     const subjectSelect = document.getElementById('subject-select');
-    const startButton = document.getElementById('start-quiz');
     
-    // Criar container para temas se não existir
-    let themesContainer = document.getElementById('themes-container');
-    if (!themesContainer) {
-        themesContainer = document.createElement('div');
-        themesContainer.id = 'themes-container';
-        themesContainer.innerHTML = `
-            <div class="quiz-form-section" id="themes-section" style="display: none;">
-                <h3><i class="fas fa-list"></i> Selecione os Temas</h3>
-                <div id="themes-list" class="themes-list"></div>
-            </div>
-        `;
-        
-        // Inserir antes da seção de dificuldade
-        const difficultySection = document.querySelector('.quiz-form-section:nth-child(2)');
-        difficultySection.parentNode.insertBefore(themesContainer, difficultySection);
+    // Remover container existente se houver
+    const existingContainer = document.getElementById('themes-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    // Criar container para temas
+    const themesContainer = document.createElement('div');
+    themesContainer.id = 'themes-container';
+    themesContainer.innerHTML = `
+        <div class="quiz-form-section" id="themes-section" style="display: none;">
+            <h3><i class="fas fa-list"></i> Selecione os Temas</h3>
+            <div id="themes-list" class="themes-list"></div>
+        </div>
+    `;
+    
+    // Inserir após a seção de disciplina (que é a primeira)
+    const disciplineSection = document.querySelector('.quiz-form-section');
+    if (disciplineSection && disciplineSection.parentNode) {
+        // Inserir após a seção de disciplina
+        disciplineSection.parentNode.insertBefore(themesContainer, disciplineSection.nextSibling);
     }
 
     // Event listener para mudança de disciplina
@@ -216,11 +229,11 @@ function setupThemeSelection(allThemes) {
                 // Mostrar seção de temas
                 themesSection.style.display = 'block';
                 
-                // Gerar lista de temas
+                // Gerar lista de temas (DESMARCAR por padrão, usuário seleciona o que quer)
                 themesList.innerHTML = categoryThemes.map(theme => `
                     <div class="theme-item">
                         <label class="theme-label">
-                            <input type="checkbox" name="theme" value="${theme.id}" checked>
+                            <input type="checkbox" name="theme" value="${theme.id}">
                             <div class="theme-info">
                                 <span class="theme-name">${theme.name}</span>
                                 <span class="theme-count">${theme.question_count || 0} questões</span>
@@ -229,7 +242,7 @@ function setupThemeSelection(allThemes) {
                     </div>
                 `).join('');
                 
-                // Adicionar CSS para os temas
+                // Adicionar CSS para os temas se não existir
                 if (!document.getElementById('themes-styles')) {
                     const style = document.createElement('style');
                     style.id = 'themes-styles';
@@ -597,6 +610,99 @@ function displaySetupScreen(mainContent, themes = []) {
     disciplineSelect.addEventListener('change', toggleTableHeader);
 }
 
+async function startQuizFromNewInterface() {
+    // Coletar temas selecionados
+    const selectedThemeIds = Array.from(document.querySelectorAll('input[name="theme"]:checked')).map(cb => parseInt(cb.value));
+    
+    // Coletar dificuldades selecionadas
+    const difficultyCheckboxes = [
+        document.getElementById('difficulty-easy'),
+        document.getElementById('difficulty-medium'),
+        document.getElementById('difficulty-hard')
+    ];
+    const selectedDifficulties = difficultyCheckboxes
+        .filter(cb => cb && cb.checked)
+        .map(cb => cb.value);
+    
+    // Coletar número de questões
+    const questionCountInput = document.getElementById('question-count');
+    const numQuestions = questionCountInput ? parseInt(questionCountInput.value, 10) : 5;
+    
+    // Validações
+    if (selectedDifficulties.length === 0) {
+        alert('Por favor, selecione pelo menos uma dificuldade.');
+        return;
+    }
+    
+    if (selectedThemeIds.length === 0) {
+        alert('Por favor, selecione pelo menos um tema.');
+        return;
+    }
+    
+    if (isNaN(numQuestions) || numQuestions <= 0) {
+        alert('Número de questões inválido.');
+        return;
+    }
+    
+    try {
+        // Mostrar loading
+        const startBtn = document.getElementById('start-quiz');
+        const originalText = startBtn.innerHTML;
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
+        startBtn.disabled = true;
+        
+        const response = await fetch(`${API_URL}/questions`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ 
+                themeIds: selectedThemeIds, 
+                count: numQuestions, 
+                difficulties: selectedDifficulties 
+            })
+        });
+        
+        if (!response.ok) {
+            const txt = await response.text();
+            console.error('Erro ao buscar questões:', response.status, txt);
+            alert('Não foi possível buscar questões do servidor.');
+            return;
+        }
+        
+        questionsToAsk = await response.json();
+        
+        if (!questionsToAsk || questionsToAsk.length === 0) {
+            alert('Não foram encontradas questões para os temas e dificuldades selecionados.');
+            return;
+        }
+        
+        // Inicializar variáveis do quiz
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = [];
+        
+        // Esconder setup e mostrar quiz
+        document.getElementById('quiz-setup').style.display = 'none';
+        document.getElementById('quiz-content').style.display = 'block';
+        
+        // Iniciar primeira questão
+        displayQuestion();
+        
+    } catch (error) {
+        console.error('Erro ao iniciar simulado:', error);
+        alert('Erro ao iniciar simulado. Tente novamente.');
+    } finally {
+        // Restaurar botão
+        const startBtn = document.getElementById('start-quiz');
+        if (startBtn) {
+            startBtn.innerHTML = originalText;
+            startBtn.disabled = false;
+        }
+    }
+}
+
 async function startQuiz(mainContent) {
     const selectedThemeIds = Array.from(document.querySelectorAll('input[name="theme"]:checked')).map(cb => parseInt(cb.value));
     const numQuestions = parseInt(document.getElementById('question-count').value, 10);
@@ -632,27 +738,316 @@ async function startQuiz(mainContent) {
     }
 }
 
-function displayQuestion(mainContent) {
+function displayQuestion(mainContent = null) {
     const currentQuestion = questionsToAsk[currentQuestionIndex];
     const letters = ['A', 'B', 'C', 'D', 'E'];
+    
+    // Usar o container específico se mainContent não for fornecido
+    const questionContainer = mainContent || document.getElementById('quiz-question');
+    if (!questionContainer) {
+        console.error('Container de questão não encontrado');
+        return;
+    }
+    
+    // Atualizar contador de questões no cabeçalho
+    const questionCountElement = document.getElementById('quiz-question-count');
+    if (questionCountElement) {
+        questionCountElement.textContent = `${currentQuestionIndex + 1} / ${questionsToAsk.length}`;
+    }
+    
+    // Atualizar barra de progresso
+    const progressFill = document.getElementById('quiz-progress-fill');
+    if (progressFill) {
+        const progress = ((currentQuestionIndex + 1) / questionsToAsk.length) * 100;
+        progressFill.style.width = `${progress}%`;
+    }
+    
     const optionsHTML = currentQuestion.options.map((option, index) => 
-        `<li class="option">
-            <span class="option-letter">
-              <span class="letter">${letters[index]}</span>
-              <svg class="icon icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <svg class="icon icon-cross" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
+        `<div class="quiz-option" data-index="${index}">
+            <span class="option-letter">${letters[index]}</span>
             <span class="option-text">${option}</span>
-        </li>`
+        </div>`
     ).join('');
 
-    mainContent.innerHTML = `
-        <div id="quiz-screen" class="quiz-card">
-            <div class="question-head"><p class="question-text">${currentQuestion.question}</p></div>
-            <ul class="options">${optionsHTML}</ul>
-            <p class="progress-text">Questão ${currentQuestionIndex + 1} de ${questionsToAsk.length}</p>
+    questionContainer.innerHTML = `
+        <div class="quiz-question-header">
+            <h3>Questão ${currentQuestionIndex + 1} de ${questionsToAsk.length}</h3>
+            <div class="quiz-theme">${currentQuestion.theme_name || 'Tema'}</div>
+        </div>
+        
+        <div class="quiz-question-text">
+            ${currentQuestion.question}
+        </div>
+        
+        <div class="quiz-options">
+            ${optionsHTML}
+        </div>
+        
+        <div class="quiz-actions">
+            <button id="quiz-respond-btn" class="quiz-btn quiz-btn-primary" disabled>
+                <i class="fas fa-check"></i>
+                Responder
+            </button>
+            <button id="quiz-skip-btn" class="quiz-btn quiz-btn-secondary">
+                <i class="fas fa-forward"></i>
+                Pular
+            </button>
         </div>
     `;
+
+    // Adicionar CSS para questões se não existir
+    if (!document.getElementById('quiz-question-styles')) {
+        const style = document.createElement('style');
+        style.id = 'quiz-question-styles';
+        style.textContent = `
+            .quiz-question-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .quiz-question-header h3 {
+                color: #4f46e5;
+                margin-bottom: 0.5rem;
+            }
+            
+            .quiz-theme {
+                background: #e0e7ff;
+                color: #4f46e5;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                display: inline-block;
+                font-size: 0.875rem;
+                font-weight: 500;
+            }
+            
+            .quiz-question-text {
+                background: rgba(255, 255, 255, 0.9);
+                padding: 2rem;
+                border-radius: 16px;
+                margin-bottom: 2rem;
+                font-size: 1.125rem;
+                line-height: 1.6;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .quiz-options {
+                display: grid;
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .quiz-option {
+                background: rgba(255, 255, 255, 0.9);
+                border: 2px solid #e5e7eb;
+                border-radius: 12px;
+                padding: 1rem 1.5rem;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .quiz-option:hover {
+                border-color: #4f46e5;
+                background: rgba(255, 255, 255, 1);
+                transform: translateY(-1px);
+            }
+            
+            .quiz-option.selected {
+                border-color: #4f46e5;
+                background: #f0f4ff;
+            }
+            
+            .option-letter {
+                background: #4f46e5;
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                flex-shrink: 0;
+            }
+            
+            .option-text {
+                flex: 1;
+                font-size: 1rem;
+            }
+            
+            .quiz-actions {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+            }
+            
+            .quiz-btn {
+                padding: 0.75rem 2rem;
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .quiz-btn-primary {
+                background: #4f46e5;
+                color: white;
+            }
+            
+            .quiz-btn-primary:hover:not(:disabled) {
+                background: #4338ca;
+                transform: translateY(-1px);
+            }
+            
+            .quiz-btn-primary:disabled {
+                background: #9ca3af;
+                cursor: not-allowed;
+            }
+            
+            .quiz-btn-secondary {
+                background: #f3f4f6;
+                color: #374151;
+                border: 2px solid #e5e7eb;
+            }
+            
+            .quiz-btn-secondary:hover {
+                background: #e5e7eb;
+                transform: translateY(-1px);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Event listeners para seleção de opções
+    document.querySelectorAll('.quiz-option').forEach(option => {
+        option.addEventListener('click', function() {
+            // Remover seleção anterior
+            document.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected'));
+            
+            // Selecionar esta opção
+            this.classList.add('selected');
+            
+            // Habilitar botão responder
+            const respondBtn = document.getElementById('quiz-respond-btn');
+            if (respondBtn) {
+                respondBtn.disabled = false;
+            }
+        });
+    });
+
+    // Event listener para responder
+    const respondBtn = document.getElementById('quiz-respond-btn');
+    if (respondBtn) {
+        respondBtn.addEventListener('click', () => {
+            const selectedOption = document.querySelector('.quiz-option.selected');
+            if (!selectedOption) {
+                alert('Selecione uma opção antes de responder.');
+                return;
+            }
+            
+            const selectedIndex = parseInt(selectedOption.dataset.index);
+            userAnswers.push(selectedIndex);
+            
+            if (selectedIndex === currentQuestion.correct_option) {
+                score++;
+            }
+            
+            nextQuestion();
+        });
+    }
+
+    // Event listener para pular
+    const skipBtn = document.getElementById('quiz-skip-btn');
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            userAnswers.push(-1); // -1 indica questão pulada
+            nextQuestion();
+        });
+    }
+}
+
+function nextQuestion() {
+    currentQuestionIndex++;
+    
+    if (currentQuestionIndex < questionsToAsk.length) {
+        displayQuestion();
+    } else {
+        showQuizResults();
+    }
+}
+
+function showQuizResults() {
+    const accuracy = questionsToAsk.length > 0 ? Math.round((score / questionsToAsk.length) * 100) : 0;
+    
+    // Atualizar estatísticas no cabeçalho
+    const accuracyElement = document.getElementById('quiz-accuracy');
+    if (accuracyElement) {
+        accuracyElement.textContent = `${accuracy}%`;
+    }
+    
+    const questionContainer = document.getElementById('quiz-question');
+    if (questionContainer) {
+        questionContainer.innerHTML = `
+            <div class="quiz-results">
+                <div class="results-header">
+                    <h2>Simulado Concluído!</h2>
+                    <div class="results-score">
+                        <span class="score-number">${score}</span>
+                        <span class="score-total">/ ${questionsToAsk.length}</span>
+                    </div>
+                    <div class="results-percentage">${accuracy}%</div>
+                </div>
+                
+                <div class="results-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Acertos: ${score}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Erros: ${questionsToAsk.length - score}</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Tempo: <span id="final-time">--:--</span></span>
+                    </div>
+                </div>
+                
+                <div class="results-actions">
+                    <button id="new-quiz-btn" class="quiz-btn quiz-btn-primary">
+                        <i class="fas fa-redo"></i>
+                        Novo Simulado
+                    </button>
+                    <button id="review-btn" class="quiz-btn quiz-btn-secondary">
+                        <i class="fas fa-eye"></i>
+                        Revisar Questões
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Event listener para novo simulado
+        const newQuizBtn = document.getElementById('new-quiz-btn');
+        if (newQuizBtn) {
+            newQuizBtn.addEventListener('click', () => {
+                document.getElementById('quiz-content').style.display = 'none';
+                document.getElementById('quiz-setup').style.display = 'block';
+                
+                // Reset do timer
+                const timerElement = document.getElementById('quiz-timer');
+                if (timerElement) {
+                    timerElement.textContent = '00:00';
+                }
+            });
+        }
+    }
+}
 
     // selection flow: pick one, then press Respond
     document.querySelectorAll('.option').forEach(optionElement => {
