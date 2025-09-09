@@ -1034,6 +1034,10 @@ function showQuizResults() {
                         <i class="fas fa-eye"></i>
                         Revisar Questões
                     </button>
+                    <button id="report-general-btn" class="quiz-btn quiz-btn-outline">
+                        <i class="fas fa-flag"></i>
+                        Reportar Questão
+                    </button>
                 </div>
             </div>
         `;
@@ -1066,6 +1070,14 @@ function showQuizResults() {
                 showReviewQuestions();
             });
         }
+        
+        // Event listener para reportar questão geral
+        const reportGeneralBtn = document.getElementById('report-general-btn');
+        if (reportGeneralBtn) {
+            reportGeneralBtn.addEventListener('click', () => {
+                showReportSelection();
+            });
+        }
     }
 }
 
@@ -1095,10 +1107,16 @@ function showReviewQuestions() {
             <div class="review-question ${statusClass}">
                 <div class="review-question-header">
                     <span class="question-number">Questão ${index + 1}</span>
-                    <span class="question-status">
-                        <i class="${statusIcon}"></i>
-                        ${isCorrect ? 'Correta' : 'Incorreta'}
-                    </span>
+                    <div class="question-header-actions">
+                        <span class="question-status">
+                            <i class="${statusIcon}"></i>
+                            ${isCorrect ? 'Correta' : 'Incorreta'}
+                        </span>
+                        <button class="report-question-btn" onclick="openReportModal(questionsToAsk[${index}])">
+                            <i class="fas fa-flag"></i>
+                            Reportar
+                        </button>
+                    </div>
                 </div>
                 <div class="review-question-text">
                     ${question.question}
@@ -1141,36 +1159,117 @@ function showReviewQuestions() {
     }
 }
 
+function showReportSelection() {
+    const questionContainer = document.getElementById('quiz-question');
+    if (!questionContainer) return;
+    
+    let reportHTML = `
+        <div class="quiz-report-selection">
+            <div class="report-selection-header">
+                <h2>Reportar Questão</h2>
+                <p>Selecione a questão que deseja reportar:</p>
+                <button id="back-to-results-from-report-btn" class="quiz-btn quiz-btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Resultados
+                </button>
+            </div>
+            <div class="report-selection-questions">
+    `;
+    
+    questionsToAsk.forEach((question, index) => {
+        const userAnswer = userAnswers[index];
+        const isCorrect = userAnswer && userAnswer.isCorrect;
+        const statusClass = isCorrect ? 'correct' : 'incorrect';
+        const statusIcon = isCorrect ? 'fas fa-check-circle' : 'fas fa-times-circle';
+        
+        reportHTML += `
+            <div class="report-selection-question ${statusClass}">
+                <div class="report-question-info">
+                    <div class="report-question-header">
+                        <span class="question-number">Questão ${index + 1}</span>
+                        <span class="question-status">
+                            <i class="${statusIcon}"></i>
+                            ${isCorrect ? 'Correta' : 'Incorreta'}
+                        </span>
+                    </div>
+                    <div class="report-question-preview">
+                        ${question.question.length > 150 ? question.question.substring(0, 150) + '...' : question.question}
+                    </div>
+                </div>
+                <button class="report-select-btn" onclick="openReportModal(questionsToAsk[${index}])">
+                    <i class="fas fa-flag"></i>
+                    Reportar Esta
+                </button>
+            </div>
+        `;
+    });
+    
+    reportHTML += `
+            </div>
+        </div>
+    `;
+    
+    questionContainer.innerHTML = reportHTML;
+    
+    // Event listener para voltar aos resultados
+    const backBtn = document.getElementById('back-to-results-from-report-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            showQuizResults();
+        });
+    }
+}
+
 function openReportModal(question) {
     const modal = document.getElementById('report-modal');
     if (!modal) return;
+    
+    // Preencher informações da questão
     document.getElementById('report-question-id').value = question.id;
-    document.getElementById('report-question-text').textContent = question.question;
+    document.getElementById('report-question-preview').textContent = question.question;
     document.getElementById('report-details').value = '';
+    document.getElementById('report-type').value = 'content'; // Reset para primeira opção
+    
     modal.style.display = 'flex';
-    // wire cancel
-    document.getElementById('cancel-report').onclick = () => { modal.style.display = 'none'; };
+    
+    // Event listener para cancelar
+    document.getElementById('cancel-report').onclick = () => { 
+        modal.style.display = 'none'; 
+    };
+    
+    // Event listener para o formulário
     const form = document.getElementById('report-form');
     form.onsubmit = async (e) => {
         e.preventDefault();
         const qid = document.getElementById('report-question-id').value;
         const type = document.getElementById('report-type').value;
         const details = document.getElementById('report-details').value || '';
+        
         try {
             const resp = await fetch(`${API_URL}/report-error`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ questionId: qid, errorType: type, details })
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ 
+                    questionId: qid, 
+                    errorType: type, 
+                    details 
+                })
             });
+            
             if (!resp.ok) {
                 const t = await resp.text();
                 alert('Erro ao enviar reporte: ' + t);
                 return;
             }
-            alert('Reporte enviado. Obrigado pela colaboração.');
+            
+            alert('Reporte enviado com sucesso! Obrigado pela colaboração.');
             modal.style.display = 'none';
+            
         } catch (err) {
-            console.error('report submit failed', err);
+            console.error('Erro ao enviar reporte:', err);
             alert('Erro ao enviar reporte. Tente novamente mais tarde.');
         }
     };

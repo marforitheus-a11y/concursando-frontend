@@ -73,7 +73,7 @@
     .card h2 { 
       margin: 0 0 var(--space-sm); 
       font-weight: 700; 
-      font-size: 1.5rem; 
+      font-size: clamp(1.25rem, 4vw, 1.5rem); 
       color: var(--gray-800);
       text-align: center;
     }
@@ -81,7 +81,7 @@
     .card p.sub { 
       margin: 0 0 var(--space-lg); 
       color: var(--gray-500); 
-      font-size: 0.95rem; 
+      font-size: clamp(0.85rem, 3vw, 0.95rem); 
       text-align: center;
       font-weight: 500;
     }
@@ -95,7 +95,7 @@
     .field label {
       font-weight: 600;
       color: var(--gray-700);
-      font-size: 0.95rem;
+      font-size: clamp(0.85rem, 3vw, 0.95rem);
     }
     
     .control {
@@ -127,7 +127,7 @@
       border: 0;
       outline: 0;
       color: var(--gray-800);
-      font-size: 1rem;
+      font-size: clamp(0.9rem, 3vw, 1rem);
       font-weight: 500;
     }
     
@@ -141,7 +141,7 @@
       justify-content: space-between; 
       align-items: center;
       margin: var(--space-sm) 0 0; 
-      font-size: 0.9rem; 
+      font-size: clamp(0.8rem, 2.5vw, 0.9rem); 
       color: var(--gray-500);
     }
     
@@ -164,7 +164,7 @@
       background: var(--gradient-primary);
       color: white;
       font-weight: 700;
-      font-size: 1rem;
+      font-size: clamp(0.9rem, 3vw, 1rem);
       padding: var(--space-lg);
       cursor: pointer;
       transition: all 0.3s ease;
@@ -172,6 +172,7 @@
       box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
       position: relative;
       overflow: hidden;
+      min-height: 44px; /* Minimum touch target */
     }
     
     .btn:hover {
@@ -228,12 +229,53 @@
     
     @media (max-width: 480px) {
       .login-wrap {
-        width: 95vw;
-        padding: var(--space-lg) var(--space-md) var(--space-xl);
+        width: calc(100vw - 1rem);
+        padding: 1rem 0.75rem 1.5rem;
+        gap: 1rem;
       }
       
       .card {
-        padding: var(--space-xl) var(--space-lg);
+        padding: 1.5rem 1rem;
+        border-radius: 16px;
+      }
+      
+      .card h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .card p.sub {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+      }
+      
+      .field {
+        margin-bottom: 0.75rem;
+      }
+      
+      .field label {
+        font-size: 0.85rem;
+      }
+      
+      .control {
+        padding: 0.75rem;
+      }
+      
+      .control input {
+        font-size: 0.9rem;
+      }
+      
+      .btn {
+        padding: 0.875rem;
+        font-size: 0.9rem;
+        min-height: 44px;
+      }
+      
+      .hint {
+        font-size: 0.8rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
       }
     }
 
@@ -286,7 +328,35 @@
     #error-message.pending { color: #f59e0b; }
 
     @media (max-width: 420px) {
-      .logo-box img { height: 44px; }
+      .logo-box img { 
+        height: 44px; 
+      }
+      
+      .login-wrap {
+        width: calc(100vw - 0.5rem);
+        padding: 0.75rem 0.5rem 1rem;
+      }
+      
+      .card {
+        padding: 1rem 0.75rem;
+      }
+      
+      .card h2 {
+        font-size: 1.125rem;
+      }
+      
+      .card p.sub {
+        font-size: 0.8rem;
+      }
+      
+      .control {
+        padding: 0.625rem;
+      }
+      
+      .btn {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+      }
     }
 
     /* Mobile bubble background behind login card (inspired by Uiverse: grumpy-squid-93) */
@@ -314,6 +384,179 @@
         height: 80px;
         bottom: -30px;
         right: -20px;
+      }
+    }
+
+    /* Enhanced Mobile Responsiveness - Extra Small Screens */
+    @media (max-width: 360px) {
+      .login-wrap {
+        margin: 10px;
+        padding: 1rem;
+      }
+
+      .card {
+        padding: 1.25rem;
+        min-height: auto;
+      }
+
+      .logo-box h1 {
+        font-size: clamp(1.5rem, 6vw, 1.8rem);
+      }
+
+      .logo-box p {
+        font-size: clamp(0.8rem, 3vw, 0.9rem);
+      }
+
+      .card h2 {
+        font-size: clamp(1.3rem, 5vw, 1.5rem);
+        margin-bottom: 1rem;
+      }
+
+      .field {
+        margin-bottom: 0.625rem;
+      }
+
+      .field label {
+        font-size: clamp(0.75rem, 3vw, 0.85rem);
+      }
+
+      .control {
+        padding: 0.5rem;
+      }
+
+      .control input {
+        font-size: clamp(0.85rem, 3vw, 0.9rem);
+        padding: 0.625rem 0.75rem;
+      }
+
+      .btn {
+        padding: 0.75rem;
+        font-size: clamp(0.85rem, 3vw, 0.9rem);
+        min-height: 44px;
+      }
+
+      .hint {
+        font-size: clamp(0.75rem, 2.5vw, 0.8rem);
+        margin-top: 0.75rem;
+      }
+
+      .social-logins {
+        flex-direction: column;
+        gap: 0.625rem;
+      }
+
+      .social-btn {
+        width: 100%;
+        font-size: clamp(0.8rem, 3vw, 0.9rem);
+      }
+    }
+
+    /* Enhanced Mobile Responsiveness - Small Mobile */
+    @media (max-width: 480px) and (min-width: 361px) {
+      .login-wrap {
+        margin: 15px;
+        padding: 1.25rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      .logo-box h1 {
+        font-size: clamp(1.7rem, 5vw, 2rem);
+      }
+
+      .card h2 {
+        font-size: clamp(1.4rem, 4vw, 1.6rem);
+      }
+
+      .control input {
+        padding: 0.75rem 1rem;
+        font-size: clamp(0.9rem, 3vw, 1rem);
+      }
+
+      .btn {
+        padding: 0.875rem 1rem;
+        font-size: clamp(0.9rem, 3vw, 1rem);
+        min-height: 44px;
+      }
+
+      .hint {
+        font-size: clamp(0.8rem, 2.5vw, 0.85rem);
+      }
+    }
+
+    /* Enhanced Mobile Responsiveness - Large Mobile/Small Tablet */
+    @media (max-width: 640px) and (min-width: 481px) {
+      .login-wrap {
+        margin: 20px auto;
+        padding: 1.5rem;
+        max-width: 90%;
+      }
+
+      .card {
+        padding: 2rem;
+      }
+
+      .logo-box h1 {
+        font-size: clamp(1.8rem, 4vw, 2.1rem);
+      }
+
+      .card h2 {
+        font-size: clamp(1.5rem, 3.5vw, 1.7rem);
+      }
+
+      .control input {
+        font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+      }
+
+      .btn {
+        font-size: clamp(0.95rem, 2.5vw, 1.05rem);
+        padding: 1rem 1.25rem;
+      }
+
+      .social-logins {
+        gap: 0.75rem;
+      }
+
+      .social-btn {
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+
+    /* Enhanced Mobile Responsiveness - Tablet Portrait */
+    @media (max-width: 768px) and (min-width: 641px) {
+      .login-wrap {
+        max-width: 85%;
+        margin: 30px auto;
+        padding: 2rem;
+      }
+
+      .card {
+        padding: 2.5rem;
+      }
+
+      .logo-box h1 {
+        font-size: clamp(2rem, 3.5vw, 2.3rem);
+      }
+
+      .card h2 {
+        font-size: clamp(1.6rem, 3vw, 1.8rem);
+      }
+
+      .control input {
+        font-size: clamp(1rem, 2.5vw, 1.1rem);
+        padding: 0.875rem 1.125rem;
+      }
+
+      .btn {
+        font-size: clamp(1rem, 2.5vw, 1.1rem);
+        padding: 1.125rem 1.5rem;
+      }
+
+      .hint {
+        font-size: clamp(0.85rem, 2vw, 0.9rem);
       }
     }
   </style>
