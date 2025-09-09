@@ -24,8 +24,8 @@ if (!token) {
     window.location.href = 'index.html';
 } else {
     console.log('Token encontrado, verificando validade...');
-    // Verificar se o token eh valido fazendo uma requisicao teste
-    fetch(`${API_URL}/verify-token`, {
+    // Verificar se o token eh valido usando endpoint que existe
+    fetch(`${API_URL}/themes`, {
         headers: { 'Authorization': `Bearer ${token}` }
     }).then(response => {
         if (!response.ok) {
@@ -37,7 +37,7 @@ if (!token) {
         }
     }).catch(error => {
         console.log('Erro ao verificar token:', error);
-        // Se não conseguir verificar, continua (pode ser problema de rede)
+        // Se nao conseguir verificar, continua (pode ser problema de rede)
     });
 }
 
