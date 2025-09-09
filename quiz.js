@@ -46,6 +46,9 @@ let userAnswers = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let lastMessageTimestamp = null;
+let quizStartTime = null;
+let timerInterval = null;
+let selectedThemeNames = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELETORES DE ELEMENTOS ---
@@ -142,6 +145,39 @@ async function updateHeaderStats() {
     } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
         // Manter valores padrão em caso de erro
+    }
+}
+
+// --- FUNÇÕES DO TIMER ---
+
+function startTimer() {
+    // Limpar timer anterior se existir
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+    
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (!quizStartTime) return;
+    
+    const now = new Date();
+    const elapsed = Math.floor((now - quizStartTime) / 1000);
+    
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    const timerElement = document.getElementById('quiz-timer');
+    if (timerElement) {
+        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
     }
 }
 
@@ -752,6 +788,10 @@ async function startQuizFromNewInterface() {
             progressText.textContent = '0%';
         }
         
+        // Iniciar timer do quiz
+        quizStartTime = new Date();
+        startTimer();
+        
         // Iniciar primeira questão
         displayQuestion();
         
@@ -774,6 +814,14 @@ async function startQuizFromNewInterface() {
 
 async function startQuiz(mainContent) {
     const selectedThemeIds = Array.from(document.querySelectorAll('input[name="theme"]:checked')).map(cb => parseInt(cb.value));
+    
+    // Coletar nomes dos temas selecionados
+    selectedThemeNames = Array.from(document.querySelectorAll('input[name="theme"]:checked')).map(cb => {
+        const label = cb.closest('label');
+        const themeName = label ? label.querySelector('.theme-name') : null;
+        return themeName ? themeName.textContent.trim() : 'Tema desconhecido';
+    });
+    
     const numQuestions = parseInt(document.getElementById('question-count').value, 10);
     const selectedDifficulties = Array.from(document.querySelectorAll('input[name="difficulty"]:checked')).map(cb => cb.value);
     if (selectedDifficulties.length === 0) { alert('Por favor, selecione pelo menos uma dificuldade.'); return; }
@@ -1390,6 +1438,9 @@ function selectAnswer(selectedElement, mainContent) {
 }
 
 async function showResults(mainContent) {
+    // Parar o timer
+    stopTimer();
+    
     mainContent.innerHTML = `<h2>Finalizando simulado...</h2>`;
     try {
         const response = await fetch(`${API_URL}/quiz/finish`, {
@@ -1417,7 +1468,9 @@ async function showResults(mainContent) {
                 score: score,
                 total: questionsToAsk.length,
                 questions: questionsToAsk,
-                userAnswers: userAnswers
+                userAnswers: userAnswers,
+                selectedThemes: selectedThemeNames,
+                quizDuration: quizStartTime ? Math.floor((new Date() - quizStartTime) / 1000) : 0
             }));
         } catch (e) {
             // If sessionStorage fails, still proceed to redirect; the results page can handle no data.
