@@ -20,20 +20,20 @@ const API_URL = resolveApiUrl();
 
 if (!token) {
     // no token => redirect to login
-    console.log('Token não encontrado no localStorage');
+    console.log('Token nao encontrado no localStorage');
     window.location.href = 'index.html';
 } else {
     console.log('Token encontrado, verificando validade...');
-    // Verificar se o token é válido fazendo uma requisição teste
+    // Verificar se o token eh valido fazendo uma requisicao teste
     fetch(`${API_URL}/verify-token`, {
         headers: { 'Authorization': `Bearer ${token}` }
     }).then(response => {
         if (!response.ok) {
-            console.log('Token inválido, redirecionando para login');
+            console.log('Token invalido, redirecionando para login');
             localStorage.clear();
             window.location.href = 'index.html';
         } else {
-            console.log('Token válido');
+            console.log('Token valido');
         }
     }).catch(error => {
         console.log('Erro ao verificar token:', error);
