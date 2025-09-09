@@ -102,23 +102,58 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Função para extrair conteúdo da resposta removendo letras de alternativa
         const extractAnswerContent = (text) => {
+            if (!text) return '';
             return text.replace(/^[A-Z]\)\s*/, '').trim();
         };
         
         // Função para normalizar texto (mesmo que no quiz.js)
         const normalizeText = (text) => {
-            return text.trim()
+            if (!text) return '';
+            return text.toString().trim()
                        .replace(/\s+/g, ' ')  // Normalizar espaços
                        .toLowerCase()         // Converter para minúsculo
                        .replace(/\u00A0/g, ' ') // Substituir espaços não-quebráveis
                        .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' '); // Outros espaços Unicode
         };
         
+        // Função melhorada para comparar respostas
+        const compareAnswers = (option, answer, userSelection) => {
+            const cleanOption = extractAnswerContent(option);
+            const cleanAnswer = typeof answer === 'string' ? answer : String(answer);
+            const cleanUserSelection = typeof userSelection === 'string' ? userSelection : String(userSelection);
+            
+            // Comparação direta primeiro
+            if (cleanOption === cleanAnswer || cleanOption === cleanUserSelection) {
+                return { isCorrect: cleanOption === cleanAnswer, isUser: cleanOption === cleanUserSelection };
+            }
+            
+            // Comparação normalizada
+            const normOption = normalizeText(cleanOption);
+            const normAnswer = normalizeText(cleanAnswer);
+            const normUser = normalizeText(cleanUserSelection);
+            
+            return { 
+                isCorrect: normOption === normAnswer, 
+                isUser: normOption === normUser 
+            };
+        };
+        
         q.options.forEach((option, optionIndex) => {
             let className = '';
-            const cleanOption = extractAnswerContent(option);
-            const isCorrectAnswer = cleanOption === q.answer || normalizeText(cleanOption) === normalizeText(q.answer);
-            const isUserAnswer = cleanOption === userAnswer.selectedOption || normalizeText(cleanOption) === normalizeText(userAnswer.selectedOption);
+            
+            // Usar a função melhorada de comparação
+            const comparison = compareAnswers(option, q.answer, userAnswer.selectedOption);
+            const isCorrectAnswer = comparison.isCorrect;
+            const isUserAnswer = comparison.isUser;
+
+            console.log(`Questão ${index + 1}, Opção ${optionIndex}:`, {
+                option: option,
+                cleanOption: extractAnswerContent(option),
+                correctAnswer: q.answer,
+                userSelection: userAnswer.selectedOption,
+                isCorrect: isCorrectAnswer,
+                isUser: isUserAnswer
+            });
 
             // Marcar resposta correta
             if (isCorrectAnswer) {
