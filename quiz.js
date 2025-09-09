@@ -695,6 +695,22 @@ async function startQuizFromNewInterface() {
         document.getElementById('quiz-setup').style.display = 'none';
         document.getElementById('quiz-content').style.display = 'block';
         
+        // Inicializar barra de progresso
+        const progressFill = document.getElementById('quiz-progress-fill');
+        if (progressFill) {
+            progressFill.style.width = '0%';
+            
+            // Adicionar texto de porcentagem inicial
+            const progressContainer = progressFill.parentElement;
+            let progressText = progressContainer.querySelector('.quiz-progress-text');
+            if (!progressText) {
+                progressText = document.createElement('div');
+                progressText.className = 'quiz-progress-text';
+                progressContainer.appendChild(progressText);
+            }
+            progressText.textContent = '0%';
+        }
+        
         // Iniciar primeira questão
         displayQuestion();
         
@@ -771,7 +787,17 @@ function displayQuestion(mainContent = null) {
     const progressFill = document.getElementById('quiz-progress-fill');
     if (progressFill) {
         const progress = ((currentQuestionIndex + 1) / questionsToAsk.length) * 100;
-        progressFill.style.width = `${progress}%`;
+        progressFill.style.width = `${Math.round(progress)}%`;
+        
+        // Adicionar ou atualizar texto de porcentagem
+        const progressContainer = progressFill.parentElement;
+        let progressText = progressContainer.querySelector('.quiz-progress-text');
+        if (!progressText) {
+            progressText = document.createElement('div');
+            progressText.className = 'quiz-progress-text';
+            progressContainer.appendChild(progressText);
+        }
+        progressText.textContent = `${Math.round(progress)}%`;
     }
     
     const optionsHTML = currentQuestion.options.map((option, index) => 
