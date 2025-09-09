@@ -1420,7 +1420,13 @@ function selectAnswer(selectedElement, mainContent) {
     const isCorrect = selectedOptionText === currentQuestion.answer;
     
     // Comparação mais robusta para questões de matemática
-    const normalizeText = (text) => text.trim().replace(/\s+/g, ' ').toLowerCase();
+    const normalizeText = (text) => {
+        return text.trim()
+                   .replace(/\s+/g, ' ')  // Normalizar espaços
+                   .toLowerCase()         // Converter para minúsculo
+                   .replace(/\u00A0/g, ' ') // Substituir espaços não-quebráveis
+                   .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' '); // Outros espaços Unicode
+    };
     const isCorrectRobust = normalizeText(selectedOptionText) === normalizeText(currentQuestion.answer);
     
     console.log('Comparação estrita:', isCorrect);

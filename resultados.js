@@ -101,7 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const letters = ['A', 'B', 'C', 'D', 'E'];
         
         // Função para normalizar texto (mesmo que no quiz.js)
-        const normalizeText = (text) => text.trim().replace(/\s+/g, ' ').toLowerCase();
+        const normalizeText = (text) => {
+            return text.trim()
+                       .replace(/\s+/g, ' ')  // Normalizar espaços
+                       .toLowerCase()         // Converter para minúsculo
+                       .replace(/\u00A0/g, ' ') // Substituir espaços não-quebráveis
+                       .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' '); // Outros espaços Unicode
+        };
         
         q.options.forEach((option, optionIndex) => {
             let className = '';
