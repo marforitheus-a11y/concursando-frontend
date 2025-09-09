@@ -156,11 +156,15 @@ function startTimer() {
         clearInterval(timerInterval);
     }
     
+    console.log('Timer iniciado com quizStartTime:', quizStartTime);
     timerInterval = setInterval(updateTimer, 1000);
 }
 
 function updateTimer() {
-    if (!quizStartTime) return;
+    if (!quizStartTime) {
+        console.log('quizStartTime não definido');
+        return;
+    }
     
     const now = new Date();
     const elapsed = Math.floor((now - quizStartTime) / 1000);
@@ -170,7 +174,11 @@ function updateTimer() {
     
     const timerElement = document.getElementById('quiz-timer');
     if (timerElement) {
-        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        const timeText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        timerElement.textContent = timeText;
+        console.log('Timer atualizado para:', timeText);
+    } else {
+        console.log('Elemento quiz-timer não encontrado');
     }
 }
 
@@ -789,10 +797,13 @@ async function startQuizFromNewInterface() {
         }
         
         // Iniciar timer do quiz
+        console.log('Iniciando timer do quiz...');
         quizStartTime = new Date();
         startTimer();
+        console.log('Timer iniciado!');
         
         // Iniciar primeira questão
+        console.log('Exibindo primeira questão...');
         displayQuestion();
         
         // Restaurar botão após sucesso
