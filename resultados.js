@@ -99,13 +99,17 @@ document.addEventListener('DOMContentLoaded', () => {
         reviewHTML += `<ul class="options">`;
 
         const letters = ['A', 'B', 'C', 'D', 'E'];
+        
+        // Função para normalizar texto (mesmo que no quiz.js)
+        const normalizeText = (text) => text.trim().replace(/\s+/g, ' ').toLowerCase();
+        
         q.options.forEach((option, optionIndex) => {
             let className = '';
 
-            if (option === q.answer) {
+            if (option === q.answer || normalizeText(option) === normalizeText(q.answer)) {
                 className = 'correct';
             }
-            if (option === userAnswer.selectedOption && !userAnswer.isCorrect) {
+            if ((option === userAnswer.selectedOption || normalizeText(option) === normalizeText(userAnswer.selectedOption)) && !userAnswer.isCorrect) {
                 className = 'incorrect';
             }
 
