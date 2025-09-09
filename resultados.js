@@ -20,16 +20,75 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const { score, total, questions, userAnswers } = lastQuizData;
+    const { score, total, questions, userAnswers, selectedThemes, quizDuration } = lastQuizData;
     const percentage = total > 0 ? ((score / total) * 100).toFixed(1) : 0;
+    
+    // Calcular cor da barra de progresso
+    const getProgressColor = (percentage) => {
+        if (percentage >= 70) return '#10b981'; // Verde
+        if (percentage >= 50) return '#f59e0b'; // Amarelo
+        return '#ef4444'; // Vermelho
+    };
+    
+    // Formatar tempo
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    };
 
     let reviewHTML = `
         <div class="score-summary">
-            <h1>Resultado Final</h1>
-            <p>Você acertou <strong>${score} de ${total}</strong> questões</p>
-            <p class="percentage">Aproveitamento: <strong>${percentage}%</strong></p>
+            <h1>Simulado Concluído!</h1>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" data-percentage="${percentage}" style="background: ${getProgressColor(percentage)}"></div>
+                </div>
+                <div class="progress-text">${percentage}%</div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Acertos: ${score}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Erros: ${total - score}</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Tempo: ${quizDuration ? formatTime(quizDuration) : '--:--'}</span>
+                </div>
+            </div>
+            
+            ${selectedThemes ? `
+                <div class="themes-info">
+                    <h4>Temas estudados:</h4>
+                    <div class="themes-list">
+                        ${selectedThemes.map(theme => `<span class="theme-tag">${theme}</span>`).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="action-buttons">
+                <button class="btn-main" id="new-quiz-btn">
+                    <i class="fas fa-redo"></i>
+                    Novo Simulado
+                </button>
+                <button class="btn-secondary" id="review-btn">
+                    <i class="fas fa-eye"></i>
+                    Revisar Questões
+                </button>
+                <button class="btn-secondary" id="report-general-btn">
+                    <i class="fas fa-flag"></i>
+                    Reportar Questão
+                </button>
+            </div>
         </div>
-        <h3 class="review-title">Revisão do Gabarito</h3>
+        <h3 class="review-title" style="display: none;">Revisão do Gabarito</h3>
+        <div id="questions-review" style="display: none;">
     `;
 
     questions.forEach((q, index) => {
@@ -69,7 +128,212 @@ document.addEventListener('DOMContentLoaded', () => {
         reviewHTML += `</div>`;
     });
 
+    reviewHTML += `</div>`; // Fechar questions-review
+
     resultDetails.innerHTML = reviewHTML;
+    
+    // Adicionar CSS para a nova interface se não existir
+    if (!document.getElementById('results-modern-styles')) {
+        const style = document.createElement('style');
+        style.id = 'results-modern-styles';
+        style.textContent = `
+            .score-summary {
+                text-align: center;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 2rem;
+                border-radius: 20px;
+                margin-bottom: 2rem;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            }
+            
+            .score-summary h1 {
+                color: #4f46e5;
+                margin-bottom: 2rem;
+                font-size: 2.5rem;
+                font-weight: 800;
+            }
+            
+            .progress-container {
+                position: relative;
+                margin: 2rem 0;
+            }
+            
+            .progress-bar {
+                width: 100%;
+                height: 20px;
+                background: #e5e7eb;
+                border-radius: 50px;
+                overflow: hidden;
+                position: relative;
+            }
+            
+            .progress-fill {
+                height: 100%;
+                width: 0%;
+                border-radius: 50px;
+                transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+            }
+            
+            .progress-text {
+                font-size: 2rem;
+                font-weight: 700;
+                margin-top: 1rem;
+                color: #374151;
+            }
+            
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1.5rem;
+                margin: 2rem 0;
+            }
+            
+            .stat-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                font-size: 1.125rem;
+                font-weight: 600;
+                color: #374151;
+            }
+            
+            .stat-item i {
+                font-size: 1.5rem;
+            }
+            
+            .stat-item:nth-child(1) i { color: #10b981; }
+            .stat-item:nth-child(2) i { color: #ef4444; }
+            .stat-item:nth-child(3) i { color: #3b82f6; }
+            
+            .themes-info {
+                margin: 2rem 0;
+                text-align: left;
+            }
+            
+            .themes-info h4 {
+                color: #374151;
+                margin-bottom: 1rem;
+                font-size: 1.125rem;
+            }
+            
+            .themes-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .theme-tag {
+                background: #e0e7ff;
+                color: #4f46e5;
+                padding: 0.5rem 1rem;
+                border-radius: 20px;
+                font-size: 0.875rem;
+                font-weight: 500;
+            }
+            
+            .action-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1rem;
+                justify-content: center;
+                margin-top: 2rem;
+            }
+            
+            .btn-main, .btn-secondary {
+                padding: 0.75rem 2rem;
+                border: none;
+                border-radius: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                text-decoration: none;
+            }
+            
+            .btn-main {
+                background: #4f46e5;
+                color: white;
+            }
+            
+            .btn-main:hover {
+                background: #4338ca;
+                transform: translateY(-1px);
+            }
+            
+            .btn-secondary {
+                background: #f3f4f6;
+                color: #374151;
+                border: 2px solid #e5e7eb;
+            }
+            
+            .btn-secondary:hover {
+                background: #e5e7eb;
+                transform: translateY(-1px);
+            }
+            
+            @media (max-width: 768px) {
+                .score-summary h1 {
+                    font-size: 2rem;
+                }
+                
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                    gap: 1rem;
+                }
+                
+                .action-buttons {
+                    flex-direction: column;
+                    align-items: center;
+                }
+                
+                .btn-main, .btn-secondary {
+                    width: 100%;
+                    max-width: 300px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Animar barra de progresso
+    setTimeout(() => {
+        const progressFill = document.querySelector('.progress-fill');
+        if (progressFill) {
+            const targetPercentage = progressFill.getAttribute('data-percentage');
+            progressFill.style.width = targetPercentage + '%';
+        }
+    }, 500);
+    
+    // Event listeners para botões
+    const newQuizBtn = document.getElementById('new-quiz-btn');
+    if (newQuizBtn) {
+        newQuizBtn.addEventListener('click', () => {
+            window.location.href = 'quiz.html';
+        });
+    }
+    
+    const reviewBtn = document.getElementById('review-btn');
+    if (reviewBtn) {
+        reviewBtn.addEventListener('click', () => {
+            const reviewSection = document.getElementById('questions-review');
+            const reviewTitle = document.querySelector('.review-title');
+            if (reviewSection && reviewTitle) {
+                reviewSection.style.display = 'block';
+                reviewTitle.style.display = 'block';
+                reviewBtn.textContent = 'Ocultar Revisão';
+                reviewBtn.onclick = () => {
+                    reviewSection.style.display = 'none';
+                    reviewTitle.style.display = 'none';
+                    reviewBtn.textContent = 'Revisar Questões';
+                    reviewBtn.onclick = () => reviewBtn.click();
+                };
+            }
+        });
+    }
+
     sessionStorage.removeItem('lastQuizResults');
 
     // attach report buttons to each question
