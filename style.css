@@ -273,6 +273,15 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--danger);
 }
 
+.review-option.user-selected {
+  border: 2px solid var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.review-option.user-selected .option-letter {
+  border: 2px solid var(--primary);
+}
+
 .option-letter {
   display: inline-flex;
   align-items: center;

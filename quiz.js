@@ -1268,14 +1268,68 @@ function showReviewQuestions() {
                 </div>
                 <div class="review-options">
                     ${question.options.map((option, optIndex) => {
-                        const isUserAnswer = userAnswer && userAnswer.selectedOption === option;
-                        const isCorrectAnswer = option === question.answer;
+                        // Função para extrair conteúdo da resposta removendo letras de alternativa
+                        const extractAnswerContent = (text) => {
+                            if (!text) return '';
+                            return text.replace(/^[A-Z]\)\s*/, '').trim();
+                        };
+                        
+                        // Função para normalizar texto
+                        const normalizeText = (text) => {
+                            if (!text) return '';
+                            return text.toString().trim()
+                                       .replace(/\s+/g, ' ')
+                                       .toLowerCase()
+                                       .replace(/\u00A0/g, ' ')
+                                       .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' ');
+                        };
+                        
+                        // Comparação melhorada
+                        const cleanOption = extractAnswerContent(option);
+                        const cleanAnswer = typeof question.answer === 'string' ? question.answer : String(question.answer);
+                        const cleanUserSelection = userAnswer && userAnswer.selectedOption ? 
+                            (typeof userAnswer.selectedOption === 'string' ? userAnswer.selectedOption : String(userAnswer.selectedOption)) : '';
+                        
+                        // Verificar se é resposta correta
+                        let isCorrectAnswer = false;
+                        if (cleanOption === cleanAnswer) {
+                            isCorrectAnswer = true;
+                        } else {
+                            const normOption = normalizeText(cleanOption);
+                            const normAnswer = normalizeText(cleanAnswer);
+                            isCorrectAnswer = normOption === normAnswer;
+                        }
+                        
+                        // Verificar se é resposta do usuário
+                        let isUserAnswer = false;
+                        if (userAnswer && userAnswer.selectedOption) {
+                            if (cleanOption === cleanUserSelection) {
+                                isUserAnswer = true;
+                            } else {
+                                const normOption = normalizeText(cleanOption);
+                                const normUser = normalizeText(cleanUserSelection);
+                                isUserAnswer = normOption === normUser;
+                            }
+                        }
+                        
+                        console.log(`QUIZ REVIEW - Questão ${index + 1}, Opção ${optIndex}:`, {
+                            option: option,
+                            cleanOption: cleanOption,
+                            correctAnswer: question.answer,
+                            userSelection: userAnswer ? userAnswer.selectedOption : 'nenhuma',
+                            isCorrect: isCorrectAnswer,
+                            isUser: isUserAnswer
+                        });
+                        
                         let optionClass = '';
                         if (isCorrectAnswer) optionClass = 'correct-answer';
                         if (isUserAnswer && !isCorrectAnswer) optionClass = 'user-wrong-answer';
                         
+                        // Adicionar classe para mostrar que foi selecionada pelo usuário
+                        let extraClass = isUserAnswer ? ' user-selected' : '';
+                        
                         return `
-                            <div class="review-option ${optionClass}">
+                            <div class="review-option ${optionClass}${extraClass}">
                                 <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span>
                                 <span class="option-text">${option}</span>
                                 ${isUserAnswer ? '<i class="fas fa-user"></i>' : ''}
