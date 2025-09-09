@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste API</title>
+</head>
+<body>
+    <h1>Teste de Conectividade API</h1>
+    <button onclick="testAPI()">Testar API</button>
+    <div id="results"></div>
+
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Teste básico de conectividade
+                results.innerHTML = '<p>Testando conectividade...</p>';
+                
+                const response = await fetch('http://localhost:3000/themes');
+                results.innerHTML += `<p>Status: ${response.status}</p>`;
+                
+                if (response.status === 401) {
+                    results.innerHTML += '<p>Não autorizado - precisa de login</p>';
+                    
+                    // Tentar login
+                    const loginResponse = await fetch('http://localhost:3000/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: 'test_user', password: '123456' })
+                    });
+                    
+                    results.innerHTML += `<p>Login Status: ${loginResponse.status}</p>`;
+                    
+                    if (loginResponse.ok) {
+                        const loginData = await loginResponse.json();
+                        results.innerHTML += '<p>Login OK! Testando temas...</p>';
+                        
+                        const themesResponse = await fetch('http://localhost:3000/themes', {
+                            headers: { 'Authorization': `Bearer ${loginData.token}` }
+                        });
+                        
+                        results.innerHTML += `<p>Temas Status: ${themesResponse.status}</p>`;
+                        
+                        if (themesResponse.ok) {
+                            const themes = await themesResponse.json();
+                            results.innerHTML += `<p>Temas carregados: ${themes.length}</p>`;
+                            if (themes.length > 0) {
+                                results.innerHTML += `<p>Primeiro tema: ${themes[0].name}</p>`;
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p>Erro: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
