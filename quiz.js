@@ -647,6 +647,8 @@ async function startQuizFromNewInterface() {
     try {
         // Mostrar loading
         const startBtn = document.getElementById('start-quiz');
+        if (!startBtn) return;
+        
         const originalText = startBtn.innerHTML;
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
         startBtn.disabled = true;
@@ -668,6 +670,9 @@ async function startQuizFromNewInterface() {
             const txt = await response.text();
             console.error('Erro ao buscar questões:', response.status, txt);
             alert('Não foi possível buscar questões do servidor.');
+            // Restaurar botão em caso de erro
+            startBtn.innerHTML = originalText;
+            startBtn.disabled = false;
             return;
         }
         
@@ -675,6 +680,9 @@ async function startQuizFromNewInterface() {
         
         if (!questionsToAsk || questionsToAsk.length === 0) {
             alert('Não foram encontradas questões para os temas e dificuldades selecionados.');
+            // Restaurar botão em caso de erro
+            startBtn.innerHTML = originalText;
+            startBtn.disabled = false;
             return;
         }
         
@@ -690,14 +698,18 @@ async function startQuizFromNewInterface() {
         // Iniciar primeira questão
         displayQuestion();
         
+        // Restaurar botão após sucesso
+        startBtn.innerHTML = originalText;
+        startBtn.disabled = false;
+        
     } catch (error) {
         console.error('Erro ao iniciar simulado:', error);
         alert('Erro ao iniciar simulado. Tente novamente.');
-    } finally {
-        // Restaurar botão
+        
+        // Restaurar botão em caso de erro
         const startBtn = document.getElementById('start-quiz');
         if (startBtn) {
-            startBtn.innerHTML = originalText;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> Iniciar Simulado';
             startBtn.disabled = false;
         }
     }
@@ -951,14 +963,8 @@ function displayQuestion(mainContent = null) {
                 return;
             }
             
-            const selectedIndex = parseInt(selectedOption.dataset.index);
-            userAnswers.push(selectedIndex);
-            
-            if (selectedIndex === currentQuestion.correct_option) {
-                score++;
-            }
-            
-            nextQuestion();
+            // Chamar selectAnswer para mostrar feedback visual
+            selectAnswer(selectedOption, mainContent);
         });
     }
 
@@ -1036,6 +1042,12 @@ function showQuizResults() {
         const newQuizBtn = document.getElementById('new-quiz-btn');
         if (newQuizBtn) {
             newQuizBtn.addEventListener('click', () => {
+                // Reset das variáveis do quiz
+                score = 0;
+                currentQuestionIndex = 0;
+                userAnswers = [];
+                questionsToAsk = [];
+                
                 document.getElementById('quiz-content').style.display = 'none';
                 document.getElementById('quiz-setup').style.display = 'block';
                 
@@ -1046,6 +1058,86 @@ function showQuizResults() {
                 }
             });
         }
+        
+        // Event listener para revisar questões
+        const reviewBtn = document.getElementById('review-btn');
+        if (reviewBtn) {
+            reviewBtn.addEventListener('click', () => {
+                showReviewQuestions();
+            });
+        }
+    }
+}
+
+function showReviewQuestions() {
+    const questionContainer = document.getElementById('quiz-question');
+    if (!questionContainer) return;
+    
+    let reviewHTML = `
+        <div class="quiz-review">
+            <div class="review-header">
+                <h2>Revisão de Questões</h2>
+                <button id="back-to-results-btn" class="quiz-btn quiz-btn-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar aos Resultados
+                </button>
+            </div>
+            <div class="review-questions">
+    `;
+    
+    questionsToAsk.forEach((question, index) => {
+        const userAnswer = userAnswers[index];
+        const isCorrect = userAnswer && userAnswer.isCorrect;
+        const statusClass = isCorrect ? 'correct' : 'incorrect';
+        const statusIcon = isCorrect ? 'fas fa-check-circle' : 'fas fa-times-circle';
+        
+        reviewHTML += `
+            <div class="review-question ${statusClass}">
+                <div class="review-question-header">
+                    <span class="question-number">Questão ${index + 1}</span>
+                    <span class="question-status">
+                        <i class="${statusIcon}"></i>
+                        ${isCorrect ? 'Correta' : 'Incorreta'}
+                    </span>
+                </div>
+                <div class="review-question-text">
+                    ${question.question}
+                </div>
+                <div class="review-options">
+                    ${question.options.map((option, optIndex) => {
+                        const isUserAnswer = userAnswer && userAnswer.selectedOption === option;
+                        const isCorrectAnswer = option === question.answer;
+                        let optionClass = '';
+                        if (isCorrectAnswer) optionClass = 'correct-answer';
+                        if (isUserAnswer && !isCorrectAnswer) optionClass = 'user-wrong-answer';
+                        
+                        return `
+                            <div class="review-option ${optionClass}">
+                                <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span>
+                                <span class="option-text">${option}</span>
+                                ${isUserAnswer ? '<i class="fas fa-user"></i>' : ''}
+                                ${isCorrectAnswer ? '<i class="fas fa-check"></i>' : ''}
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    reviewHTML += `
+            </div>
+        </div>
+    `;
+    
+    questionContainer.innerHTML = reviewHTML;
+    
+    // Event listener para voltar aos resultados
+    const backBtn = document.getElementById('back-to-results-btn');
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            showQuizResults();
+        });
     }
 }
 
@@ -1085,46 +1177,49 @@ function openReportModal(question) {
 }
 
 function selectAnswer(selectedElement, mainContent) {
-    const rawSelected = selectedElement.querySelector('.option-text').textContent || '';
-    const selectedOptionText = String(rawSelected).trim();
+    const selectedOptionText = selectedElement.querySelector('.option-text').textContent.trim();
     const currentQuestion = questionsToAsk[currentQuestionIndex];
-    // normalize answer comparison (strings, trim, lowercase)
-    const normalize = v => (v === null || v === undefined) ? '' : String(v).trim().toLowerCase();
-    const correctAnswer = normalize(currentQuestion.answer);
-    const isCorrect = normalize(selectedOptionText) === correctAnswer;
+    
+    // Verificar se a resposta está correta
+    const isCorrect = selectedOptionText === currentQuestion.answer;
 
-    // Bloqueia os outros cliques
-    document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'none');
+    // Bloquear outras interações
+    document.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.style.pointerEvents = 'none';
+    });
 
-    // Marca as respostas
+    // Aplicar estilos visuais
     if (isCorrect) {
         score++;
-        selectedElement.classList.add('correct');
+        selectedElement.style.backgroundColor = '#dcfce7';
+        selectedElement.style.borderColor = '#16a34a';
+        selectedElement.style.color = '#16a34a';
     } else {
-        selectedElement.classList.add('incorrect');
-        document.querySelectorAll('.option').forEach(opt => {
-            const text = opt.querySelector('.option-text').textContent || '';
-            if (normalize(text) === correctAnswer) {
-                opt.classList.add('correct');
+        selectedElement.style.backgroundColor = '#fef2f2';
+        selectedElement.style.borderColor = '#dc2626';
+        selectedElement.style.color = '#dc2626';
+        
+        // Destacar a resposta correta
+        document.querySelectorAll('.quiz-option').forEach(opt => {
+            const optionText = opt.querySelector('.option-text').textContent.trim();
+            if (optionText === currentQuestion.answer) {
+                opt.style.backgroundColor = '#dcfce7';
+                opt.style.borderColor = '#16a34a';
+                opt.style.color = '#16a34a';
             }
         });
     }
 
-    // Guarda resposta do usuário
+    // Guardar resposta do usuário
     userAnswers.push({
         questionId: currentQuestion.id,
         selectedOption: selectedOptionText,
         isCorrect: isCorrect
     });
 
-    // Avança para próxima questão após delay
+    // Avançar para próxima questão após delay
     setTimeout(() => {
-        currentQuestionIndex++;
-        if (currentQuestionIndex < questionsToAsk.length) {
-            displayQuestion(mainContent);
-        } else {
-            showResults(mainContent);
-        }
+        nextQuestion();
     }, 2000);
 }
 
