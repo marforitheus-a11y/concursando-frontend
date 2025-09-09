@@ -1405,19 +1405,28 @@ function selectAnswer(selectedElement, mainContent) {
     const selectedOptionText = selectedElement.querySelector('.option-text').textContent.trim();
     const currentQuestion = questionsToAsk[currentQuestionIndex];
     
+    // Extrair apenas o conteúdo da resposta, removendo letras de alternativa (A), B), C), etc.)
+    const extractAnswerContent = (text) => {
+        // Remove padrões como "A) ", "B) ", "C) ", etc. do início
+        return text.replace(/^[A-Z]\)\s*/, '').trim();
+    };
+    
+    const cleanSelectedText = extractAnswerContent(selectedOptionText);
+    
     // Debug logging para investigar o problema das questões de matemática
     console.log('=== DEBUG RESPOSTA ===');
     console.log('Questão ID:', currentQuestion.id);
     console.log('Pergunta:', currentQuestion.question);
-    console.log('Resposta selecionada:', `"${selectedOptionText}"`);
+    console.log('Resposta selecionada original:', `"${selectedOptionText}"`);
+    console.log('Resposta selecionada limpa:', `"${cleanSelectedText}"`);
     console.log('Resposta correta:', `"${currentQuestion.answer}"`);
-    console.log('Tipos:', typeof selectedOptionText, 'vs', typeof currentQuestion.answer);
-    console.log('Length:', selectedOptionText.length, 'vs', currentQuestion.answer.length);
-    console.log('Bytes selecionada:', Array.from(selectedOptionText).map(c => c.charCodeAt(0)));
+    console.log('Tipos:', typeof cleanSelectedText, 'vs', typeof currentQuestion.answer);
+    console.log('Length:', cleanSelectedText.length, 'vs', currentQuestion.answer.length);
+    console.log('Bytes selecionada:', Array.from(cleanSelectedText).map(c => c.charCodeAt(0)));
     console.log('Bytes correta:', Array.from(currentQuestion.answer).map(c => c.charCodeAt(0)));
     
     // Verificar se a resposta está correta
-    const isCorrect = selectedOptionText === currentQuestion.answer;
+    const isCorrect = cleanSelectedText === currentQuestion.answer;
     
     // Comparação mais robusta para questões de matemática
     const normalizeText = (text) => {
@@ -1427,7 +1436,7 @@ function selectAnswer(selectedElement, mainContent) {
                    .replace(/\u00A0/g, ' ') // Substituir espaços não-quebráveis
                    .replace(/[\u2000-\u200F\u2028-\u202F]/g, ' '); // Outros espaços Unicode
     };
-    const isCorrectRobust = normalizeText(selectedOptionText) === normalizeText(currentQuestion.answer);
+    const isCorrectRobust = normalizeText(cleanSelectedText) === normalizeText(currentQuestion.answer);
     
     console.log('Comparação estrita:', isCorrect);
     console.log('Comparação robusta:', isCorrectRobust);
@@ -1454,7 +1463,8 @@ function selectAnswer(selectedElement, mainContent) {
         // Destacar a resposta correta
         document.querySelectorAll('.quiz-option').forEach(opt => {
             const optionText = opt.querySelector('.option-text').textContent.trim();
-            if (optionText === currentQuestion.answer || normalizeText(optionText) === normalizeText(currentQuestion.answer)) {
+            const cleanOptionText = extractAnswerContent(optionText);
+            if (cleanOptionText === currentQuestion.answer || normalizeText(cleanOptionText) === normalizeText(currentQuestion.answer)) {
                 opt.style.backgroundColor = '#dcfce7';
                 opt.style.borderColor = '#16a34a';
                 opt.style.color = '#16a34a';
@@ -1465,7 +1475,7 @@ function selectAnswer(selectedElement, mainContent) {
     // Guardar resposta do usuário
     userAnswers.push({
         questionId: currentQuestion.id,
-        selectedOption: selectedOptionText,
+        selectedOption: cleanSelectedText, // Usar resposta limpa sem letra da alternativa
         isCorrect: finalIsCorrect
     });
 

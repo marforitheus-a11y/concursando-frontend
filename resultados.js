@@ -100,6 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const letters = ['A', 'B', 'C', 'D', 'E'];
         
+        // Função para extrair conteúdo da resposta removendo letras de alternativa
+        const extractAnswerContent = (text) => {
+            return text.replace(/^[A-Z]\)\s*/, '').trim();
+        };
+        
         // Função para normalizar texto (mesmo que no quiz.js)
         const normalizeText = (text) => {
             return text.trim()
@@ -111,11 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         q.options.forEach((option, optionIndex) => {
             let className = '';
+            const cleanOption = extractAnswerContent(option);
 
-            if (option === q.answer || normalizeText(option) === normalizeText(q.answer)) {
+            if (cleanOption === q.answer || normalizeText(cleanOption) === normalizeText(q.answer)) {
                 className = 'correct';
             }
-            if ((option === userAnswer.selectedOption || normalizeText(option) === normalizeText(userAnswer.selectedOption)) && !userAnswer.isCorrect) {
+            if ((cleanOption === userAnswer.selectedOption || normalizeText(cleanOption) === normalizeText(userAnswer.selectedOption)) && !userAnswer.isCorrect) {
                 className = 'incorrect';
             }
 
