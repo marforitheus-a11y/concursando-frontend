@@ -93,6 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     questions.forEach((q, index) => {
         const userAnswer = userAnswers[index];
+        
+        // Debug detalhado
+        console.log(`=== RESULTADOS DEBUG - Questão ${index + 1} ===`);
+        console.log('Questão ID:', q.id);
+        console.log('Pergunta:', q.question.substring(0, 50) + '...');
+        console.log('Resposta correta da questão:', JSON.stringify(q.answer));
+        console.log('Resposta do usuário:', JSON.stringify(userAnswer.selectedOption));
+        console.log('User answer object:', userAnswer);
+        console.log('Opções da questão:', q.options);
+        console.log('=======================================');
+        
         reviewHTML += `<div class="review-question">`;
         reviewHTML += `<h4>Questão ${index + 1}</h4>`;
         reviewHTML += `<p class="question-text">${q.question}</p>`;
