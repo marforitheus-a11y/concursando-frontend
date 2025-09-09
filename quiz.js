@@ -20,7 +20,25 @@ const API_URL = resolveApiUrl();
 
 if (!token) {
     // no token => redirect to login
+    console.log('Token não encontrado no localStorage');
     window.location.href = 'index.html';
+} else {
+    console.log('Token encontrado, verificando validade...');
+    // Verificar se o token é válido fazendo uma requisição teste
+    fetch(`${API_URL}/verify-token`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).then(response => {
+        if (!response.ok) {
+            console.log('Token inválido, redirecionando para login');
+            localStorage.clear();
+            window.location.href = 'index.html';
+        } else {
+            console.log('Token válido');
+        }
+    }).catch(error => {
+        console.log('Erro ao verificar token:', error);
+        // Se não conseguir verificar, continua (pode ser problema de rede)
+    });
 }
 
 let questionsToAsk = [];
@@ -132,22 +150,46 @@ async function updateHeaderStats() {
 
 async function loadThemes() {
     try {
-        const response = await fetch(`${API_URL}/themes`, { headers: { 'Authorization': `Bearer ${token}` } });
+        // Verificar se temos token
+        if (!token) {
+            console.log('Token não encontrado, redirecionando para login');
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        const response = await fetch(`${API_URL}/themes`, { 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
         
         if (!response.ok) {
+            console.log('Erro na resposta:', response.status);
             if (response.status === 401 || response.status === 403) {
+                console.log('Token inválido, limpando storage e redirecionando');
                 localStorage.clear();
                 window.location.href = 'index.html';
+                return;
             }
             throw new Error(`Erro do servidor: ${response.status}`);
         }
-        const themes = await response.json();
         
-        populateSubjectSelect(themes);
-        setupThemeSelection(themes);
+        const themes = await response.json();
+        console.log('Temas carregados com sucesso:', themes.length);
+        
+        if (themes && themes.length > 0) {
+            populateSubjectSelect(themes);
+            setupThemeSelection(themes);
+        } else {
+            showError('Nenhuma disciplina encontrada no sistema.');
+        }
     } catch (error) {
         console.error("Erro em loadThemes:", error);
-        showError('Não foi possível carregar as disciplinas. Verifique sua conexão.');
+        
+        // Se é erro de rede, tentar reconectar
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            showError('Erro de conexão. Verifique se o servidor está funcionando.');
+        } else {
+            showError('Não foi possível carregar as disciplinas. Tente recarregar a página.');
+        }
     }
 }
 
