@@ -28,6 +28,8 @@ let userAnswers = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let lastMessageTimestamp = null;
+let startTime = null;
+let timerInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELETORES DE ELEMENTOS ---
@@ -80,8 +82,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const startQuizBtn = document.getElementById('start-quiz');
     if (startQuizBtn) {
         startQuizBtn.addEventListener('click', () => {
-            startQuizFromNewInterface();
-        });
+    }
+});
+
+function startQuizTimer() {
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    if (!startTime) return;
+    
+    const elapsed = Date.now() - startTime;
+    const minutes = Math.floor(elapsed / 60000);
+    const seconds = Math.floor((elapsed % 60000) / 1000);
+    
+    const timerElement = document.getElementById('quiz-timer');
+    if (timerElement) {
+        timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function stopQuizTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    return startTime ? Date.now() - startTime : 0;
+}
+
+function formatTime(milliseconds) {
+    const minutes = Math.floor(milliseconds / 60000);
+    const seconds = Math.floor((milliseconds % 60000) / 1000);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function updateProgressBar() {
+    const progressFill = document.getElementById('quiz-progress-fill');
+    if (!progressFill) return;
+    
+    // Progresso baseado em acertos, não em questões respondidas
+    const accuracy = questionsToAsk.length > 0 ? (score / questionsToAsk.length) : 0;
+    const progressPercentage = Math.round(accuracy * 100);
+    
+    // Animação suave
+    progressFill.style.transition = 'width 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    progressFill.style.width = `${progressPercentage}%`;
+    
+    // Atualizar texto de porcentagem
+    const progressContainer = progressFill.parentElement;
+    let progressText = progressContainer.querySelector('.quiz-progress-text');
+    if (!progressText) {
+        progressText = document.createElement('div');
+        progressText.className = 'quiz-progress-text';
+        progressContainer.appendChild(progressText);
+    }
+    progressText.textContent = `${progressPercentage}%`;
+    
+    // Mudança de cor baseada na performance
+    if (accuracy >= 0.7) {
+        progressFill.style.background = 'linear-gradient(90deg, #10b981, #34d399)'; // Verde
+    } else if (accuracy >= 0.5) {
+        progressFill.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)'; // Amarelo
+    } else {
+        progressFill.style.background = 'linear-gradient(90deg, #ef4444, #f87171)'; // Vermelho
+    }
+}     });
     }
 });
 
@@ -696,20 +762,10 @@ async function startQuizFromNewInterface() {
         document.getElementById('quiz-content').style.display = 'block';
         
         // Inicializar barra de progresso
-        const progressFill = document.getElementById('quiz-progress-fill');
-        if (progressFill) {
-            progressFill.style.width = '0%';
-            
-            // Adicionar texto de porcentagem inicial
-            const progressContainer = progressFill.parentElement;
-            let progressText = progressContainer.querySelector('.quiz-progress-text');
-            if (!progressText) {
-                progressText = document.createElement('div');
-                progressText.className = 'quiz-progress-text';
-                progressContainer.appendChild(progressText);
-            }
-            progressText.textContent = '0%';
-        }
+        updateProgressBar();
+        
+        // Iniciar timer
+        startQuizTimer();
         
         // Iniciar primeira questão
         displayQuestion();
@@ -781,23 +837,6 @@ function displayQuestion(mainContent = null) {
     const questionCountElement = document.getElementById('quiz-question-count');
     if (questionCountElement) {
         questionCountElement.textContent = `${currentQuestionIndex + 1} / ${questionsToAsk.length}`;
-    }
-    
-    // Atualizar barra de progresso
-    const progressFill = document.getElementById('quiz-progress-fill');
-    if (progressFill) {
-        const progress = ((currentQuestionIndex + 1) / questionsToAsk.length) * 100;
-        progressFill.style.width = `${Math.round(progress)}%`;
-        
-        // Adicionar ou atualizar texto de porcentagem
-        const progressContainer = progressFill.parentElement;
-        let progressText = progressContainer.querySelector('.quiz-progress-text');
-        if (!progressText) {
-            progressText = document.createElement('div');
-            progressText.className = 'quiz-progress-text';
-            progressContainer.appendChild(progressText);
-        }
-        progressText.textContent = `${Math.round(progress)}%`;
     }
     
     const optionsHTML = currentQuestion.options.map((option, index) => 
