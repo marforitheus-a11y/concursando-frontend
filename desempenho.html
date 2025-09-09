@@ -70,6 +70,36 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="desempenho.js"></script>
 
+  <style>
+    /* Melhorias específicas para desktop na página de desempenho */
+    @media (min-width: 768px) {
+      #groups {
+        max-width: 100%;
+        width: 100%;
+      }
+      
+      .theme-card {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      
+      .theme-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      
+      #perf-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+      
+      #perf-top {
+        margin-bottom: 24px;
+      }
+    }
+  </style>
+
   <script>
     // menu open/close for desempenho page (simple, mirrors quiz.html behavior)
     (function(){

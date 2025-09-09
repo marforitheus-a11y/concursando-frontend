@@ -91,15 +91,46 @@ async function init() {
         card.style.justifyContent = 'space-between';
         card.style.alignItems = 'center';
         card.style.marginBottom = '10px';
+        card.style.padding = '16px 20px'; // Mais padding
+        card.style.minHeight = '60px'; // Altura mínima maior
 
-        const left = document.createElement('div'); left.style.flex='1';
-        const title = document.createElement('div'); title.style.fontWeight='700'; title.textContent = label;
-        const meta = document.createElement('div'); meta.style.color='var(--muted)'; meta.style.fontSize='0.85rem'; meta.textContent = `${total} questões — ${pct}% acertos`;
+        const left = document.createElement('div'); 
+        left.style.flex = '1'; 
+        left.style.marginRight = '20px'; // Mais espaço entre esquerda e direita
+        left.style.maxWidth = 'calc(100% - 140px)'; // Limitar largura para não comprimir o lado direito
+        
+        const title = document.createElement('div'); 
+        title.style.fontWeight = '700'; 
+        title.style.fontSize = '1rem'; // Tamanho de fonte maior
+        title.style.lineHeight = '1.4';
+        title.style.marginBottom = '4px';
+        title.style.wordWrap = 'break-word'; // Quebra de linha se necessário
+        title.textContent = label;
+        
+        const meta = document.createElement('div'); 
+        meta.style.color = 'var(--muted)'; 
+        meta.style.fontSize = '0.875rem'; // Slightly larger
+        meta.style.lineHeight = '1.3';
+        meta.textContent = `${total} questões — ${pct}% acertos`;
         left.appendChild(title); left.appendChild(meta);
 
-        const right = document.createElement('div'); right.style.minWidth='120px'; right.style.textAlign='right';
-        const pctEl = document.createElement('div'); pctEl.style.fontWeight='800'; pctEl.textContent = `${pct}%`;
-        const countsText = document.createElement('div'); countsText.style.color='var(--muted)'; countsText.textContent = `${correct} acertos • ${total - correct} erros`;
+        const right = document.createElement('div'); 
+        right.style.minWidth = '120px'; 
+        right.style.textAlign = 'right';
+        right.style.flexShrink = '0'; // Não comprimir
+        
+        const pctEl = document.createElement('div'); 
+        pctEl.style.fontWeight = '800'; 
+        pctEl.style.fontSize = '1.25rem'; // Maior
+        pctEl.style.lineHeight = '1.2';
+        pctEl.style.marginBottom = '2px';
+        pctEl.textContent = `${pct}%`;
+        
+        const countsText = document.createElement('div'); 
+        countsText.style.color = 'var(--muted)'; 
+        countsText.style.fontSize = '0.75rem';
+        countsText.style.lineHeight = '1.3';
+        countsText.textContent = `${correct} acertos • ${total - correct} erros`;
         right.appendChild(pctEl); right.appendChild(countsText);
 
         card.appendChild(left); card.appendChild(right);

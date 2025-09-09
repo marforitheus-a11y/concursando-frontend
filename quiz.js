@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarMenu = document.getElementById('sidebar-menu');
     const menuOverlay = document.getElementById('menu-overlay');
     const logoutBtnMenu = document.getElementById('logout-btn-menu');
+    const homeBtnMenu = document.getElementById('home-btn-menu');
     const modal = document.getElementById('global-message-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
 
@@ -82,6 +83,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.removeItem('username');
                 window.location.href = 'index.html';
             }
+        });
+    }
+    
+    if (homeBtnMenu) {
+        homeBtnMenu.addEventListener('click', () => {
+            goToHome();
+            // Fechar o menu após clicar
+            sidebarMenu.classList.remove('active');
+            menuOverlay.classList.remove('active');
         });
     }
 
@@ -189,10 +199,19 @@ function stopTimer() {
     }
 }
 
+// Função para voltar ao início
+function goToHome() {
+    stopTimer();
+    loadThemes();
+}
+
 
 // --- FUNÇÕES DE LÓGICA DO QUIZ ---
 
 async function loadThemes() {
+    // Parar o timer se estiver rodando
+    stopTimer();
+    
     try {
         // Verificar se temos token
         if (!token) {

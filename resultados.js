@@ -117,16 +117,25 @@ document.addEventListener('DOMContentLoaded', () => {
         q.options.forEach((option, optionIndex) => {
             let className = '';
             const cleanOption = extractAnswerContent(option);
+            const isCorrectAnswer = cleanOption === q.answer || normalizeText(cleanOption) === normalizeText(q.answer);
+            const isUserAnswer = cleanOption === userAnswer.selectedOption || normalizeText(cleanOption) === normalizeText(userAnswer.selectedOption);
 
-            if (cleanOption === q.answer || normalizeText(cleanOption) === normalizeText(q.answer)) {
+            // Marcar resposta correta
+            if (isCorrectAnswer) {
                 className = 'correct';
             }
-            if ((cleanOption === userAnswer.selectedOption || normalizeText(cleanOption) === normalizeText(userAnswer.selectedOption)) && !userAnswer.isCorrect) {
+            
+            // Marcar resposta do usuário se estiver incorreta
+            if (isUserAnswer && !userAnswer.isCorrect) {
                 className = 'incorrect';
             }
+            
+            // Se o usuário acertou, sua resposta já será marcada como 'correct' pelo primeiro if
+            // Adicionar uma indicação visual extra se esta foi a resposta escolhida pelo usuário
+            let extraClass = isUserAnswer ? ' user-selected' : '';
 
             reviewHTML += `
-                <li class="option ${className}">
+                <li class="option ${className}${extraClass}">
                     <span class="option-letter">
                       <span class="letter">${letters[optionIndex]}</span>
                       <svg class="icon icon-check" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -138,9 +147,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         reviewHTML += `</ul>`;
-        if (!userAnswer.isCorrect) {
-            reviewHTML += `<p class="feedback"><strong>Sua resposta:</strong> ${userAnswer.selectedOption}</p>`;
+        
+        // Sempre mostrar qual foi a resposta do usuário
+        if (userAnswer.isCorrect) {
+            reviewHTML += `<p class="feedback feedback-correct"><strong>✓ Você acertou!</strong> Sua resposta: ${userAnswer.selectedOption}</p>`;
+        } else {
+            reviewHTML += `<p class="feedback feedback-incorrect"><strong>✗ Resposta incorreta.</strong> Sua resposta: ${userAnswer.selectedOption}</p>`;
+            reviewHTML += `<p class="feedback feedback-correct"><strong>Resposta correta:</strong> ${q.answer}</p>`;
         }
+        
         reviewHTML += `</div>`;
     });
 
@@ -309,6 +324,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     width: 100%;
                     max-width: 300px;
                 }
+            }
+            
+            /* Estilos para destacar a resposta selecionada pelo usuário */
+            .option.user-selected {
+                border: 2px solid #4f46e5 !important;
+                box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;
+            }
+            
+            .option.user-selected .option-letter {
+                border: 2px solid #4f46e5 !important;
+            }
+            
+            /* Estilos para as mensagens de feedback */
+            .feedback {
+                margin: 12px 0 8px 0;
+                padding: 8px 12px;
+                border-radius: 8px;
+                font-size: 0.9rem;
+            }
+            
+            .feedback-correct {
+                background: #ecfdf5;
+                color: #059669;
+                border-left: 4px solid #10b981;
+            }
+            
+            .feedback-incorrect {
+                background: #fef2f2;
+                color: #dc2626;
+                border-left: 4px solid #ef4444;
             }
         `;
         document.head.appendChild(style);
