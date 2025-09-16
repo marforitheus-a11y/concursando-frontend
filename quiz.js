@@ -5,6 +5,11 @@
 const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
 function resolveApiUrl() {
+    // FORÇAR SEMPRE LOCALHOST PARA DESENVOLVIMENTO
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    
     try {
         const u = new URL(window.location.href);
         const fromParam = u.searchParams.get('api');
@@ -25,7 +30,7 @@ if (!token) {
 } else {
     console.log('Token encontrado, verificando validade...');
     // Verificar se o token eh valido usando endpoint que existe
-    fetch(`${API_URL}/themes`, {
+    fetch(`${API_URL}/quiz/themes`, {
         headers: { 'Authorization': `Bearer ${token}` }
     }).then(response => {
         if (!response.ok) {
@@ -131,7 +136,7 @@ async function updateHeaderStats() {
         }
 
         // Buscar estatísticas do usuário
-        const response = await fetch(`${API_URL}/user/stats`, {
+        const response = await fetch(`${API_URL}/quiz/user-stats`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -220,7 +225,7 @@ async function loadThemes() {
             return;
         }
         
-        const response = await fetch(`${API_URL}/themes`, { 
+        const response = await fetch(`${API_URL}/quiz/themes`, { 
             headers: { 'Authorization': `Bearer ${token}` } 
         });
         
@@ -519,6 +524,7 @@ function displaySetupScreen(mainContent, themes = []) {
                                 <label><input type="checkbox" name="difficulty" value="easy" checked> Fácil</label>
                                 <label><input type="checkbox" name="difficulty" value="medium"> Média</label>
                                 <label><input type="checkbox" name="difficulty" value="hard"> Difícil</label>
+                                <label><input type="checkbox" name="difficulty" value="rag"> RAG</label>
                             </div>
                             <input type="number" id="question-count" value="5" min="1" class="input" style="width:120px">
                             <button id="start-btn" class="btn-main">Iniciar Simulado</button>
@@ -545,26 +551,26 @@ function displaySetupScreen(mainContent, themes = []) {
             // Try primary endpoint, then fall back to compatibility aliases (handles older backends)
             async function tryCounts() {
                 // 1) POST /questions/counts
-                let r = await fetch(`${API_URL}/questions/counts`, {
+                let r = await fetch(`${API_URL}/quiz/questions/counts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ themeIds: selectedThemes })
                 });
                 if (r.ok) return r.json();
                 // 2) GET /questions/counts?themeIds=1,2
-                r = await fetch(`${API_URL}/questions/counts?themeIds=${encodeURIComponent(selectedThemes.join(','))}`, {
+                r = await fetch(`${API_URL}/quiz/questions/counts?themeIds=${encodeURIComponent(selectedThemes.join(','))}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (r.ok) return r.json();
                 // 3) POST /questions/count
-                r = await fetch(`${API_URL}/questions/count`, {
+                r = await fetch(`${API_URL}/quiz/questions/count`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ themeIds: selectedThemes })
                 });
                 if (r.ok) return r.json();
                 // 4) GET /questions/count?themeIds=...
-                r = await fetch(`${API_URL}/questions/count?themeIds=${encodeURIComponent(selectedThemes.join(','))}`, {
+                r = await fetch(`${API_URL}/quiz/questions/count?themeIds=${encodeURIComponent(selectedThemes.join(','))}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (r.ok) return r.json();
@@ -604,7 +610,7 @@ function displaySetupScreen(mainContent, themes = []) {
                 try {
                     const controller = new AbortController();
                     const t = setTimeout(() => controller.abort(), 5000);
-                    const r = await fetch(`${API_URL}/questions`, {
+                    const r = await fetch(`${API_URL}/quiz/questions`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                         body: JSON.stringify({ themeIds: selectedThemes, count: 9999, difficulties }),
@@ -643,10 +649,10 @@ function displaySetupScreen(mainContent, themes = []) {
             const ids = Array.from(document.querySelectorAll('.theme-row[data-theme-id]')).map(r => parseInt(r.getAttribute('data-theme-id'), 10)).filter(Boolean);
             if (ids.length === 0) return;
             // prefer a single call returning counts grouped by theme
-            let r = await fetch(`${API_URL}/questions/counts-by-theme?themeIds=${encodeURIComponent(ids.join(','))}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            let r = await fetch(`${API_URL}/quiz/questions/counts-by-theme?themeIds=${encodeURIComponent(ids.join(','))}`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!r.ok) {
                 // fallback to POST
-                r = await fetch(`${API_URL}/questions/counts-by-theme`, {
+                r = await fetch(`${API_URL}/quiz/questions/counts-by-theme`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ themeIds: ids })
@@ -757,7 +763,7 @@ async function startQuizFromNewInterface() {
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
         startBtn.disabled = true;
         
-        const response = await fetch(`${API_URL}/questions`, {
+        const response = await fetch(`${API_URL}/quiz/questions`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
@@ -859,7 +865,7 @@ async function startQuiz(mainContent) {
     if (isNaN(numQuestions) || numQuestions <= 0) { alert(`Número de questões inválido.`); return; }
 
     try {
-        const response = await fetch(`${API_URL}/questions`, {
+        const response = await fetch(`${API_URL}/quiz/questions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ themeIds: selectedThemeIds, count: numQuestions, difficulties: selectedDifficulties })
@@ -1445,7 +1451,7 @@ function openReportModal(question) {
         const details = document.getElementById('report-details').value || '';
         
         try {
-            const resp = await fetch(`${API_URL}/report-error`, {
+            const resp = await fetch(`${API_URL}/quiz/report-error`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json', 
@@ -1564,7 +1570,7 @@ async function showResults(mainContent) {
     
     mainContent.innerHTML = `<h2>Finalizando simulado...</h2>`;
     try {
-        const response = await fetch(`${API_URL}/quiz/finish`, {
+        const response = await fetch(`${API_URL}/quiz/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({
@@ -1605,7 +1611,7 @@ async function checkForMessages(modal) {
     const modalContent = document.getElementById('global-message-content');
     const modalImage = document.getElementById('global-message-image');
     try {
-        const response = await fetch(`${API_URL}/message`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const response = await fetch(`${API_URL}/quiz/message`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (response.status === 204) return;
         if (!response.ok) {
             const t = await response.text();
