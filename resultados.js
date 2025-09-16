@@ -2,9 +2,9 @@
 // ARQUIVO resultados.js (ATUALIZADO COM VISUAL MELHORADO)
 // ==================================================================
 // determine API URL (match other front-end files)
-const API_URL = (typeof window !== 'undefined' && window.location && window.location.origin)
-    ? (window.location.origin.includes('vercel.app') ? 'https://quiz-api-z4ri.onrender.com' : window.location.origin)
-    : 'http://localhost:3000';
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? 'http://localhost:3000' 
+    : 'https://quiz-api-z4ri.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     const resultDetails = document.getElementById('result-details');
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            /* Estilos para destacar a resposta selecionada pelo usuário */
+            /* Estilos para destacar a resposta selecionada pelo usuário - usa CSS do style.css */
             .option.user-selected {
                 border: 2px solid #4f46e5 !important;
                 box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;

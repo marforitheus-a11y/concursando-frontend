@@ -3,6 +3,11 @@ const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
 
 function resolveApiUrl() {
+    // FORÇAR SEMPRE LOCALHOST PARA DESENVOLVIMENTO
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    
     try {
         const u = new URL(window.location.href);
         const fromParam = u.searchParams.get('api');
@@ -45,7 +50,7 @@ async function loadAccountData() {
     try {
         showMessage('Carregando informações da conta...', 'info');
         
-        const response = await fetch(`${API_URL}/account/me`, {
+        const response = await fetch(`${API_URL}/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -177,7 +182,7 @@ async function saveChanges() {
 
         showMessage('Salvando alterações...', 'info');
 
-        const response = await fetch(`${API_URL}/account/update`, {
+        const response = await fetch(`${API_URL}/update`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -1,8 +1,8 @@
 // ARQUIVO login.js - Sistema Moderno com LGPD
 // ==================================================================
-const API_URL = (typeof window !== 'undefined' && window.location && window.location.origin)
-    ? (window.location.origin.includes('vercel.app') ? 'https://quiz-api-z4ri.onrender.com' : window.location.origin)
-    : 'http://localhost:3000';
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+    ? 'http://localhost:3000' 
+    : 'https://quiz-api-z4ri.onrender.com';
 
 document.addEventListener('DOMContentLoaded', () => {
     const toggleButtons = document.querySelectorAll('.toggle-btn');
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errorMessage.style.color = 'var(--primary)';
 
         try {
-            const response = await fetchWithTimeout(`${API_URL}/signup`, {
+            const response = await fetchWithTimeout(`${API_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

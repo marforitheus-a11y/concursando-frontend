@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Test - Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #3730a3;
+            --primary-light: #818cf8;
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --white: #ffffff;
+            --red: #ef4444;
+            --green: #10b981;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--gradient-bg);
+            color: var(--text-primary);
+            display: grid;
+            place-items: center;
+            font-family: var(--font-body);
+            line-height: 1.6;
+        }
+
+        .login-container {
+            width: min(92vw, 450px);
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: var(--primary);
+            color: var(--white);
+            padding: var(--space-xl);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-sm);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-top: var(--space-sm);
+        }
+
+        .form-container {
+            padding: var(--space-xl);
+        }
+
+        .toggle-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .toggle-btn {
+            padding: var(--space-sm) var(--space-md);
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: var(--white);
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--space-sm);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: var(--space-md);
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: var(--space-md);
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: var(--space-md);
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            padding: var(--space-sm) var(--space-md);
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            color: var(--red);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: var(--space-md);
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            padding: var(--space-sm) var(--space-md);
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            color: var(--green);
+            font-size: 0.9rem;
+            text-align: center;
+            margin-bottom: var(--space-md);
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .test-info {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .test-info h3 {
+            color: var(--primary);
+            margin-bottom: var(--space-sm);
+            font-size: 0.9rem;
+        }
+
+        .test-info p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        #name-group {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <h1><i class="fas fa-flask"></i> Quiz Test</h1>
+            <p>Ambiente de Teste - Frontend Otimizado</p>
+            <div class="version-badge">v2.0.0-test</div>
+        </div>
+
+        <div class="form-container">
+            <div class="test-info">
+                <h3><i class="fas fa-info-circle"></i> Ambiente de Teste</h3>
+                <p>• Backend Modular: http://localhost:4000</p>
+                <p>• Frontend Otimizado com API Client</p>
+                <p>• Códigos originais preservados</p>
+                <p>• Arquitetura MVC testada</p>
+            </div>
+
+            <div class="toggle-buttons">
+                <button class="toggle-btn active" id="login-toggle">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+                <button class="toggle-btn" id="signup-toggle">
+                    <i class="fas fa-user-plus"></i> Cadastrar
+                </button>
+            </div>
+
+            <form id="auth-form">
+                <div class="form-group" id="name-group">
+                    <label for="name">Nome Completo:</label>
+                    <input type="text" id="name" placeholder="Seu nome completo">
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Usuário:</label>
+                    <input type="text" id="username" placeholder="Usuário ou E-mail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" placeholder="Sua senha" required>
+                </div>
+
+                <div class="error-message" id="error-message"></div>
+                <div class="success-message" id="success-message"></div>
+
+                <button type="submit" class="submit-btn" id="submit-btn">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginToggle = document.getElementById('login-toggle');
+            const signupToggle = document.getElementById('signup-toggle');
+            const authForm = document.getElementById('auth-form');
+            const submitBtn = document.getElementById('submit-btn');
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+
+            const nameGroup = document.getElementById('name-group');
+            const nameInput = document.getElementById('name');
+            const usernameInput = document.getElementById('username');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            let isLoginMode = true;
+
+            // Verificar se já está logado
+            if (AuthGuard.check()) {
+                window.location.href = 'quiz.html';
+                return;
+            }
+
+            // Toggle entre Login e Cadastro
+            loginToggle.addEventListener('click', () => {
+                setLoginMode(true);
+            });
+
+            signupToggle.addEventListener('click', () => {
+                setLoginMode(false);
+            });
+
+            function setLoginMode(login) {
+                isLoginMode = login;
+                
+                if (login) {
+                    loginToggle.classList.add('active');
+                    signupToggle.classList.remove('active');
+                    nameGroup.style.display = 'none';
+                    emailInput.style.display = 'block';
+                    usernameInput.placeholder = "Usuário ou E-mail";
+                    submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
+                } else {
+                    signupToggle.classList.add('active');
+                    loginToggle.classList.remove('active');
+                    nameGroup.style.display = 'block';
+                    emailInput.style.display = 'block';
+                    usernameInput.placeholder = "Nome de usuário";
+                    submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Criar Conta';
+                }
+                
+                clearMessages();
+            }
+
+            // Submeter formulário
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if (isLoginMode) {
+                    await handleLogin();
+                } else {
+                    await handleSignup();
+                }
+            });
+
+            async function handleLogin() {
+                const loginIdentifier = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+
+                if (!loginIdentifier || !password) {
+                    showError('Preencha todos os campos.');
+                    return;
+                }
+
+                setLoading(true);
+                clearMessages();
+
+                try {
+                    const response = await apiClient.login(loginIdentifier, password);
+                    
+                    if (response.success) {
+                        localStorage.setItem('token', response.token);
+                        localStorage.setItem('username', response.user.username);
+                        localStorage.setItem('email', response.user.email);
+                        
+                        showSuccess('Login realizado com sucesso!');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'quiz.html';
+                        }, 1000);
+                    } else {
+                        showError(response.message || 'Erro no login');
+                    }
+                } catch (error) {
+                    showError('Erro: ' + error.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            async function handleSignup() {
+                const name = nameInput.value.trim();
+                const username = usernameInput.value.trim();
+                const email = emailInput.value.trim();
+                const password = passwordInput.value.trim();
+
+                if (!name || !username || !email || !password) {
+                    showError('Preencha todos os campos.');
+                    return;
+                }
+
+                if (password.length < 6) {
+                    showError('A senha deve ter pelo menos 6 caracteres.');
+                    return;
+                }
+
+                setLoading(true);
+                clearMessages();
+
+                try {
+                    const userData = {
+                        name,
+                        username,
+                        email,
+                        password,
+                        lgpdConsent: true,
+                        marketingConsent: false
+                    };
+
+                    const response = await apiClient.signup(userData);
+                    
+                    if (response.success) {
+                        showSuccess('Conta criada com sucesso! Faça login para continuar.');
+                        
+                        setTimeout(() => {
+                            setLoginMode(true);
+                            authForm.reset();
+                        }, 2000);
+                    } else {
+                        showError(response.message || 'Erro no cadastro');
+                    }
+                } catch (error) {
+                    showError('Erro: ' + error.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            function setLoading(loading) {
+                submitBtn.disabled = loading;
+                if (loading) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+                } else {
+                    submitBtn.innerHTML = isLoginMode 
+                        ? '<i class="fas fa-sign-in-alt"></i> Entrar'
+                        : '<i class="fas fa-user-plus"></i> Criar Conta';
+                }
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.classList.add('show');
+                successMessage.classList.remove('show');
+            }
+
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.classList.add('show');
+                errorMessage.classList.remove('show');
+            }
+
+            function clearMessages() {
+                errorMessage.classList.remove('show');
+                successMessage.classList.remove('show');
+            }
+
+            console.log('🔐 Login page loaded - Test Environment');
+        });
+    </script>
+</body>
+</html>

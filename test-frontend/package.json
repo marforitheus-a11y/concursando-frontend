@@ -1,0 +1,17 @@
+{
+  "name": "quiz-frontend-test",
+  "version": "2.0.0",
+  "description": "Frontend de teste para o backend modular",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": ["quiz", "test", "frontend"],
+  "author": "Quiz Test Team",
+  "license": "ISC"
+}

@@ -3,7 +3,7 @@
 
 async function debugAdminFunctions() {
     const token = localStorage.getItem('token');
-    const API_URL = 'https://quiz-api-z4ri.onrender.com';
+    const API_URL = 'https://quiz-backend-ov0o.onrender.com';
     
     console.log('=== DEBUG ADMIN FUNCTIONS ===');
     console.log('Token:', token ? 'presente' : 'ausente');

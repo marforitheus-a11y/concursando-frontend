@@ -23,6 +23,11 @@ const token = localStorage.getItem('token');
 const username = localStorage.getItem('username');
 // Detect API URL consistently with quiz.js: support ?api= override and localStorage persistence
 function resolveApiUrl() {
+    // FORÇAR SEMPRE LOCALHOST PARA DESENVOLVIMENTO
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return 'http://localhost:3000';
+    }
+    
     try {
         const u = new URL(window.location.href);
         const fromParam = u.searchParams.get('api');
@@ -169,7 +174,7 @@ function showServerError(text) {
 async function fetchCategoriesSmart() {
     // 1) public categories
     try {
-        const resp = await fetch(`${API_URL}/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const resp = await fetch(`${API_URL}/admin/categories`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (resp.ok) return await resp.json();
     } catch (_) { /* ignore */ }
     // 2) admin categories
