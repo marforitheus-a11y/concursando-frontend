@@ -728,7 +728,8 @@ async function startQuizFromNewInterface() {
     const difficultyCheckboxes = [
         document.getElementById('difficulty-easy'),
         document.getElementById('difficulty-medium'),
-        document.getElementById('difficulty-hard')
+        document.getElementById('difficulty-hard'),
+        document.getElementById('difficulty-rag')
     ];
     const selectedDifficulties = difficultyCheckboxes
         .filter(cb => cb && cb.checked)

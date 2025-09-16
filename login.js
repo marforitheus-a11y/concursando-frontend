@@ -117,7 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = 'quiz.html';
                 }, 1000);
             } else {
-                errorMessage.textContent = result.message || 'Erro no login.';
+                // Melhorar mensagem de erro baseada no tipo de identificador usado
+                let errorMsg = result.message || 'Erro no login.';
+                if (errorMsg.includes('inválidos') || errorMsg.includes('incorretos')) {
+                    const isEmail = loginIdentifier.includes('@');
+                    errorMsg = isEmail 
+                        ? 'E-mail ou senha incorretos.' 
+                        : 'Usuário ou senha incorretos.';
+                }
+                errorMessage.textContent = errorMsg;
                 errorMessage.style.color = '#ef4444';
             }
         } catch (error) {
