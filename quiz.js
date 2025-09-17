@@ -206,7 +206,19 @@ function stopTimer() {
 
 // Função para voltar ao início
 function goToHome() {
+    // Parar qualquer timer em execução
     stopTimer();
+    
+    // Resetar todas as variáveis do quiz
+    questionsToAsk = [];
+    userAnswers = [];
+    currentQuestionIndex = 0;
+    score = 0;
+    lastMessageTimestamp = null;
+    quizStartTime = null;
+    selectedThemeNames = [];
+    
+    // Voltar para a tela de seleção de temas
     loadThemes();
 }
 
@@ -1186,10 +1198,12 @@ function showQuizResults() {
                         <i class="fas fa-eye"></i>
                         Revisar Questões
                     </button>
+                    <!-- Botão removido conforme solicitado pelo usuário
                     <button id="report-general-btn" class="quiz-btn quiz-btn-outline">
                         <i class="fas fa-flag"></i>
                         Reportar Questão
                     </button>
+                    -->
                 </div>
             </div>
         `;
@@ -1223,13 +1237,15 @@ function showQuizResults() {
             });
         }
         
-        // Event listener para reportar questão geral
+        // Event listener removido junto com o botão
+        /*
         const reportGeneralBtn = document.getElementById('report-general-btn');
         if (reportGeneralBtn) {
             reportGeneralBtn.addEventListener('click', () => {
                 showReportSelection();
             });
         }
+        */
     }
 }
 
