@@ -155,7 +155,12 @@ async function init() {
 
   // Chart.js internal legend will render below the chart; no custom legend is created here.
 
-      document.getElementById('summary-text').textContent = `Temas presentes: ${arr.length} — total de questões: ${Object.values(themeAgg).reduce((s,x)=>s+x.total,0)}`;
+      // Calcular percentual total de acertos
+      const totalQuestions = Object.values(themeAgg).reduce((s,x)=>s+x.total,0);
+      const totalCorrect = Object.values(themeAgg).reduce((s,x)=>s+x.correct,0);
+      const totalPercentage = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+      
+      document.getElementById('summary-text').textContent = `Temas presentes: ${arr.length} — Total: ${totalQuestions} questões — Acertos gerais: ${totalPercentage}% (${totalCorrect}/${totalQuestions})`;
     }
 
     // initial render (all themes)

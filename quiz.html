@@ -81,12 +81,6 @@
         margin-bottom: 1.5rem;
       }
 
-      .difficulty-selector {
-        grid-template-columns: repeat(3, 1fr);
-        max-width: 600px;
-        margin: 0 auto;
-      }
-
       .question-count-section {
         max-width: 300px;
         margin: 0 auto;
@@ -292,58 +286,6 @@
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
     }
-
-    /* Difficulty Selector */
-    .difficulty-selector {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: var(--space-sm);
-      margin-bottom: var(--space-lg);
-    }
-
-    .difficulty-option {
-      position: relative;
-    }
-
-    .difficulty-option input[type="checkbox"] {
-      opacity: 0;
-      position: absolute;
-    }
-
-    .difficulty-option label {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--space-md);
-      border: 2px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      background: white;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-weight: 600;
-      text-align: center;
-      min-height: 60px;
-    }
-
-    .difficulty-option input[type="checkbox"]:checked + label {
-      border-color: var(--primary);
-      background: var(--primary);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .difficulty-easy label { border-color: #10b981; }
-    .difficulty-easy input:checked + label { background: #10b981; border-color: #10b981; }
-
-    .difficulty-medium label { border-color: #f59e0b; }
-    .difficulty-medium input:checked + label { background: #f59e0b; border-color: #f59e0b; }
-
-    .difficulty-hard label { border-color: #ef4444; }
-    .difficulty-hard input:checked + label { background: #ef4444; border-color: #ef4444; }
-
-    .difficulty-rag label { border-color: #8b5cf6; }
-    .difficulty-rag input:checked + label { background: #8b5cf6; border-color: #8b5cf6; }
 
     /* Question Count */
     .question-count-section {
@@ -1315,28 +1257,6 @@
           <select id="subject-select">
             <option value="">Selecione uma disciplina</option>
           </select>
-        </div>
-      </div>
-
-      <div class="quiz-form-section">
-        <h3><i class="fas fa-layer-group"></i> Nível de Dificuldade</h3>
-        <div class="difficulty-selector">
-          <div class="difficulty-option difficulty-easy">
-            <input type="checkbox" id="difficulty-easy" name="difficulty" value="easy" checked>
-            <label for="difficulty-easy">Fácil</label>
-          </div>
-          <div class="difficulty-option difficulty-medium">
-            <input type="checkbox" id="difficulty-medium" name="difficulty" value="medium">
-            <label for="difficulty-medium">Médio</label>
-          </div>
-          <div class="difficulty-option difficulty-hard">
-            <input type="checkbox" id="difficulty-hard" name="difficulty" value="hard">
-            <label for="difficulty-hard">Difícil</label>
-          </div>
-          <div class="difficulty-option difficulty-rag">
-            <input type="checkbox" id="difficulty-rag" name="difficulty" value="rag">
-            <label for="difficulty-rag">RAG</label>
-          </div>
         </div>
       </div>
 

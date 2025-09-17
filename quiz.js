@@ -76,6 +76,12 @@ const userRole = getUserRoleFromToken();
 const isAdmin = userRole === 'admin';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Ocultar seção de dificuldade para usuários normais
+    const difficultySection = document.getElementById('difficulty-section');
+    if (difficultySection && !isAdmin) {
+        difficultySection.style.display = 'none';
+    }
+    
     // --- SELETORES DE ELEMENTOS ---
     const mainContent = document.getElementById('main-content');
     const menuToggleBtn = document.getElementById('menu-toggle-btn');
@@ -221,6 +227,12 @@ function stopTimer() {
     if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
+    }
+    
+    // Resetar display do timer
+    const timerElement = document.getElementById('quiz-timer');
+    if (timerElement) {
+        timerElement.textContent = '00:00';
     }
 }
 
@@ -559,12 +571,7 @@ function displaySetupScreen(mainContent, themes = []) {
                                 <label><input type="checkbox" name="difficulty" value="hard"> Difícil</label>
                                 <label><input type="checkbox" name="difficulty" value="rag"> RAG</label>
                             </div>
-                            ` : `
-                            <div style="display:flex;gap:8px;align-items:center">
-                                <label style="font-weight:600;color:#666;">Dificuldade: Proporção automática aplicada</label>
-                                <small style="color:#888;">(Fácil: 1, Média: 2, Difícil: 2, RAG: 5)</small>
-                            </div>
-                            `}
+                            ` : ''}
                             <input type="number" id="question-count" value="5" min="1" class="input" style="width:120px">
                             <button id="start-btn" class="btn-main">Iniciar Simulado</button>
                         </div>
@@ -1217,6 +1224,16 @@ function nextQuestion() {
 function showQuizResults() {
     const accuracy = questionsToAsk.length > 0 ? Math.round((score / questionsToAsk.length) * 100) : 0;
     
+    // Calcular tempo final
+    let finalTime = '--:--';
+    if (quizStartTime) {
+        const endTime = new Date();
+        const elapsed = Math.floor((endTime - quizStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        finalTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
     // Atualizar estatísticas no cabeçalho
     const accuracyElement = document.getElementById('quiz-accuracy');
     if (accuracyElement) {
@@ -1247,7 +1264,7 @@ function showQuizResults() {
                     </div>
                     <div class="stat-item">
                         <i class="fas fa-clock"></i>
-                        <span>Tempo: <span id="final-time">--:--</span></span>
+                        <span>Tempo: ${finalTime}</span>
                     </div>
                 </div>
                 
