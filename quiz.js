@@ -55,6 +55,26 @@ let quizStartTime = null;
 let timerInterval = null;
 let selectedThemeNames = [];
 
+// Função para decodificar JWT e verificar se é admin
+function getUserRoleFromToken() {
+    if (!token) return null;
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        const payload = JSON.parse(jsonPayload);
+        return payload.role || 'user';
+    } catch (error) {
+        console.error('Erro ao decodificar token:', error);
+        return 'user';
+    }
+}
+
+const userRole = getUserRoleFromToken();
+const isAdmin = userRole === 'admin';
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELETORES DE ELEMENTOS ---
     const mainContent = document.getElementById('main-content');
@@ -531,6 +551,7 @@ function displaySetupScreen(mainContent, themes = []) {
                 ${themeHTML}
             </div>
                         <div class="controls-row">
+                            ${isAdmin ? `
                             <div style="display:flex;gap:8px;align-items:center">
                                 <label style="font-weight:600">Dificuldades:</label>
                                 <label><input type="checkbox" name="difficulty" value="easy" checked> Fácil</label>
@@ -538,6 +559,12 @@ function displaySetupScreen(mainContent, themes = []) {
                                 <label><input type="checkbox" name="difficulty" value="hard"> Difícil</label>
                                 <label><input type="checkbox" name="difficulty" value="rag"> RAG</label>
                             </div>
+                            ` : `
+                            <div style="display:flex;gap:8px;align-items:center">
+                                <label style="font-weight:600;color:#666;">Dificuldade: Proporção automática aplicada</label>
+                                <small style="color:#888;">(Fácil: 1, Média: 2, Difícil: 2, RAG: 5)</small>
+                            </div>
+                            `}
                             <input type="number" id="question-count" value="5" min="1" class="input" style="width:120px">
                             <button id="start-btn" class="btn-main">Iniciar Simulado</button>
                         </div>
@@ -552,6 +579,10 @@ function displaySetupScreen(mainContent, themes = []) {
     });
     // when difficulty checkboxes change or themes change, update available counts
     function getSelectedDifficulties() {
+        if (!isAdmin) {
+            // Para usuários normais, sempre considerar todas as dificuldades para contagem
+            return ['easy', 'medium', 'hard', 'rag'];
+        }
         return Array.from(document.querySelectorAll('input[name="difficulty"]:checked')).map(cb => cb.value);
     }
     async function refreshCountsForSelectedThemes() {
@@ -649,8 +680,10 @@ function displaySetupScreen(mainContent, themes = []) {
             }
         }
     }
-    // wire difficulty and theme checkboxes to refresh counts
-    document.querySelectorAll('input[name="difficulty"]').forEach(cb => cb.addEventListener('change', refreshCountsForSelectedThemes));
+    // wire difficulty and theme checkboxes to refresh counts (apenas para admin)
+    if (isAdmin) {
+        document.querySelectorAll('input[name="difficulty"]').forEach(cb => cb.addEventListener('change', refreshCountsForSelectedThemes));
+    }
     // also refresh when theme checkboxes change
     document.addEventListener('change', (e) => { if (e.target && e.target.name === 'theme') refreshCountsForSelectedThemes(); });
     // run once to initialize counts (in case themes are pre-selected)
@@ -736,27 +769,31 @@ async function startQuizFromNewInterface() {
     // Coletar temas selecionados
     const selectedThemeIds = Array.from(document.querySelectorAll('input[name="theme"]:checked')).map(cb => parseInt(cb.value));
     
-    // Coletar dificuldades selecionadas
-    const difficultyCheckboxes = [
-        document.getElementById('difficulty-easy'),
-        document.getElementById('difficulty-medium'),
-        document.getElementById('difficulty-hard'),
-        document.getElementById('difficulty-rag')
-    ];
-    const selectedDifficulties = difficultyCheckboxes
-        .filter(cb => cb && cb.checked)
-        .map(cb => cb.value);
+    // Coletar dificuldades selecionadas apenas se for admin
+    let selectedDifficulties = null;
+    if (isAdmin) {
+        const difficultyCheckboxes = [
+            document.getElementById('difficulty-easy'),
+            document.getElementById('difficulty-medium'),
+            document.getElementById('difficulty-hard'),
+            document.getElementById('difficulty-rag')
+        ];
+        selectedDifficulties = difficultyCheckboxes
+            .filter(cb => cb && cb.checked)
+            .map(cb => cb.value);
+        
+        // Validação apenas para admin
+        if (selectedDifficulties.length === 0) {
+            alert('Por favor, selecione pelo menos uma dificuldade.');
+            return;
+        }
+    }
     
     // Coletar número de questões
     const questionCountInput = document.getElementById('question-count');
     const numQuestions = questionCountInput ? parseInt(questionCountInput.value, 10) : 5;
     
     // Validações
-    if (selectedDifficulties.length === 0) {
-        alert('Por favor, selecione pelo menos uma dificuldade.');
-        return;
-    }
-    
     if (selectedThemeIds.length === 0) {
         alert('Por favor, selecione pelo menos um tema.');
         return;
@@ -776,17 +813,23 @@ async function startQuizFromNewInterface() {
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Carregando...';
         startBtn.disabled = true;
         
+        const requestBody = { 
+            themeIds: selectedThemeIds, 
+            count: numQuestions
+        };
+        
+        // Adicionar dificuldades apenas se for admin
+        if (isAdmin && selectedDifficulties) {
+            requestBody.difficulties = selectedDifficulties;
+        }
+        
         const response = await fetch(`${API_URL}/questions`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json', 
                 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify({ 
-                themeIds: selectedThemeIds, 
-                count: numQuestions, 
-                difficulties: selectedDifficulties 
-            })
+            body: JSON.stringify(requestBody)
         });
         
         if (!response.ok) {
@@ -872,16 +915,35 @@ async function startQuiz(mainContent) {
     });
     
     const numQuestions = parseInt(document.getElementById('question-count').value, 10);
-    const selectedDifficulties = Array.from(document.querySelectorAll('input[name="difficulty"]:checked')).map(cb => cb.value);
-    if (selectedDifficulties.length === 0) { alert('Por favor, selecione pelo menos uma dificuldade.'); return; }
+    
+    // Coletar dificuldades apenas se for admin
+    let selectedDifficulties = null;
+    if (isAdmin) {
+        selectedDifficulties = Array.from(document.querySelectorAll('input[name="difficulty"]:checked')).map(cb => cb.value);
+        if (selectedDifficulties.length === 0) { 
+            alert('Por favor, selecione pelo menos uma dificuldade.'); 
+            return; 
+        }
+    }
+    
     if (selectedThemeIds.length === 0) { alert("Por favor, selecione pelo menos um tema."); return; }
     if (isNaN(numQuestions) || numQuestions <= 0) { alert(`Número de questões inválido.`); return; }
 
     try {
+        const requestBody = { 
+            themeIds: selectedThemeIds, 
+            count: numQuestions
+        };
+        
+        // Adicionar dificuldades apenas se for admin
+        if (isAdmin && selectedDifficulties) {
+            requestBody.difficulties = selectedDifficulties;
+        }
+        
         const response = await fetch(`${API_URL}/questions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ themeIds: selectedThemeIds, count: numQuestions, difficulties: selectedDifficulties })
+            body: JSON.stringify(requestBody)
         });
         if (!response.ok) {
             const txt = await response.text();
